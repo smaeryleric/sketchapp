@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Sprunki Sketch Animation Board</title>
+  <title>Sketch Animation Board 1280x720</title>
   <style>
     * { box-sizing: border-box; }
 
@@ -16,7 +16,7 @@
     }
 
     .sidebar {
-      width: 320px;
+      width: 280px;
       padding: 20px 18px;
       border-right: 1px solid #e5e7eb;
       background: #ffffff;
@@ -26,10 +26,16 @@
       box-shadow: 4px 0 18px rgba(15, 23, 42, 0.06);
     }
 
+    .sidebar-right {
+      border-right: none;
+      border-left: 1px solid #e5e7eb;
+      box-shadow: -4px 0 18px rgba(15, 23, 42, 0.06);
+    }
+
     .sidebar-header {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 6px;
     }
 
     .sidebar h1 {
@@ -42,6 +48,21 @@
       font-size: 12px;
       margin: 0;
       color: #6b7280;
+    }
+
+    .project-name-input {
+      width: 100%;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid #d1d5db;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.12s ease, box-shadow 0.12s ease;
+    }
+
+    .project-name-input:focus {
+      border-color: #0ea5e9;
+      box-shadow: 0 0 0 1px rgba(14,165,233,0.3);
     }
 
     .section-title {
@@ -112,13 +133,6 @@
       color: #374151;
     }
 
-    .controls {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      margin-top: 8px;
-    }
-
     button {
       padding: 8px 10px;
       border-radius: 999px;
@@ -157,18 +171,15 @@
       background: linear-gradient(135deg, #22c1f1, #3b82f6);
     }
 
-    .mode-indicator {
+    .small-btn {
+      padding: 6px 10px;
       font-size: 11px;
-      color: #6b7280;
-      margin-top: 2px;
     }
 
-    .draw-tools {
-      margin-top: 6px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      align-items: center;
+    .small-btn.selected {
+      border-color: #0ea5e9;
+      background: #dbeafe;
+      color: #1e40af;
     }
 
     .color-label {
@@ -208,15 +219,10 @@
       width: 80px;
     }
 
-    .small-btn {
-      padding: 6px 10px;
+    .mode-indicator {
       font-size: 11px;
-    }
-
-    .small-btn.selected {
-      border-color: #0ea5e9;
-      background: #dbeafe;
-      color: #1e40af;
+      color: #6b7280;
+      margin-top: 2px;
     }
 
     .main {
@@ -229,8 +235,8 @@
     }
 
     .stage-wrapper {
-      background: #f3f4f6;
-      padding: 16px 16px 10px;
+      background: #ffffff;
+      padding: 10px 16px 10px;
       border-radius: 18px;
       box-shadow:
         0 24px 60px rgba(15, 23, 42, 0.18),
@@ -240,6 +246,25 @@
       gap: 8px;
       max-width: 1000px;
       width: 100%;
+    }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid #e5e7eb;
+      background: #f9fafb;
+    }
+
+    .top-bar-left,
+    .top-bar-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
     }
 
     #stage {
@@ -315,12 +340,78 @@
       gap: 6px;
       flex-wrap: nowrap;
     }
+
+    /* Правый редактор заметок */
+
+    .notes-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 6px;
+      margin-bottom: 6px;
+    }
+
+    .notes-toolbar button,
+    .notes-toolbar select {
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid #d1d5db;
+      background: #ffffff;
+      cursor: pointer;
+    }
+
+    .notes-toolbar button:hover {
+      background: #f3f4f6;
+    }
+
+    .notes-editor {
+      background: #ffffff;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      min-height: 260px;
+      padding: 8px 10px;
+      font-size: 13px;
+      overflow-y: auto;
+    }
+
+    .notes-editor:focus {
+      outline: none;
+      border-color: #0ea5e9;
+      box-shadow: 0 0 0 1px rgba(14,165,233,0.3);
+    }
+
+    .notes-editor img {
+      max-width: 100%;
+      display: block;
+      margin: 4px 0;
+    }
   </style>
 </head>
 <body>
+  <!-- Левое меню -->
   <aside class="sidebar">
     <div class="sidebar-header">
-      <h1>Sprunki Sketch Animation Board</h1>
+      <h1>Sketch Animation</h1>
+      <input
+        id="projectName"
+        class="project-name-input"
+        type="text"
+        placeholder="Название проекта"
+      />
+      <p class="sidebar-subtitle">Покадровые скетчи 1280×720</p>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Проект</div>
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <button id="btnSaveProject" class="small-btn">Сохранить проект (.json)</button>
+        <button id="btnLoadProject" class="small-btn">Загрузить проект (.json)</button>
+        <input type="file" id="projectFile" accept=".json" style="display:none" />
+        <p class="small-text">
+          Перед загрузкой проект текущая сцена будет очищена. Убедитесь, что вы её сохранили.
+        </p>
+      </div>
     </div>
 
     <div class="section">
@@ -332,42 +423,42 @@
     </div>
 
     <div class="section">
-      <div class="section-title">Персонажи</div>
+      <div class="section-title">Палитра персонажей</div>
       <div class="palette" id="palette"></div>
       <p class="small-text">
-        Перетащи персонажа на белый холст.
+        Перетащи персонажа на холст — появится прямоугольник с именем.
       </p>
-    </div>
-
-    <div class="section">
-      <div class="section-title">Режим и рисование</div>
-      <div class="controls">
-        <button id="btnMode">Режим: перемещение</button>
-        <span class="mode-indicator" id="modeIndicator">
-          Сейчас: перемещение персонажей. Нажми кнопку, чтобы перейти в режим рисования.
-        </span>
-        <button id="btnClear">Очистить текущий кадр</button>
-      </div>
-
-      <div class="draw-tools">
-        <label class="color-label">
-          Цвет
-          <input type="color" id="brushColor" value="#111827" />
-        </label>
-        <label class="size-label">
-          Размер
-          <input type="range" id="brushSize" min="1" max="20" value="3" />
-        </label>
-        <button id="btnBrush" class="small-btn selected">Кисть</button>
-        <button id="btnEraser" class="small-btn">Ластик</button>
-      </div>
     </div>
   </aside>
 
+  <!-- Центральный блок -->
   <main class="main">
     <div class="stage-wrapper">
+      <div class="top-bar">
+        <div class="top-bar-left">
+          <button id="btnMode">Режим: перемещение</button>
+          <button id="btnBrush" class="small-btn selected">Кисть</button>
+          <button id="btnEraser" class="small-btn">Ластик</button>
+          <button id="btnClear" class="small-btn">Очистить кадр</button>
+        </div>
+        <div class="top-bar-right">
+          <label class="color-label">
+            Цвет
+            <input type="color" id="brushColor" value="#111827" />
+          </label>
+          <label class="size-label">
+            Размер
+            <input type="range" id="brushSize" min="1" max="20" value="3" />
+          </label>
+        </div>
+      </div>
+      <div class="mode-indicator" id="modeIndicator">
+        Сейчас: перемещение персонажей. Нажми «Режим», чтобы рисовать.
+      </div>
+
       <canvas id="stage" width="1280" height="720"></canvas>
       <div class="canvas-label">
+        Холст 1280×720 (уменьшенный на экране). Чуть ниже середины есть направляющая горизонтальная линия.
       </div>
 
       <div class="timeline-bar">
@@ -383,15 +474,51 @@
     </div>
   </main>
 
+  <!-- Правое меню: заметки кадра -->
+  <aside class="sidebar sidebar-right">
+    <div class="sidebar-header">
+      <h1>Заметки кадра</h1>
+      <p class="sidebar-subtitle">Текст и изображения, привязанные к выбранному кадру.</p>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Форматирование</div>
+      <div class="notes-toolbar">
+        <button type="button" id="btnNotesBold"><b>B</b></button>
+        <button type="button" id="btnNotesItalic"><i>I</i></button>
+        <button type="button" id="btnNotesUnderline"><u>U</u></button>
+        <button type="button" id="btnNotesList">• Список</button>
+        <select id="notesFontSize">
+          <option value="">Размер</option>
+          <option value="2">Малый</option>
+          <option value="3">Нормальный</option>
+          <option value="4">Крупный</option>
+          <option value="5">Заголовок</option>
+        </select>
+        <button type="button" id="btnNotesImage">Картинка…</button>
+        <input type="file" id="notesImageInput" accept="image/*" style="display:none" />
+      </div>
+      <div
+        id="notesEditor"
+        class="notes-editor"
+        contenteditable="true"
+        spellcheck="false"
+      ></div>
+      <p class="small-text">
+        Каждому кадру соответствует свой текст/верстка. При переключении кадра содержимое сохраняется автоматически.
+      </p>
+    </div>
+  </aside>
+
   <script>
     const canvas = document.getElementById("stage");
     const ctx = canvas.getContext("2d");
 
-    const ITEM_WIDTH = 160;
-    const ITEM_HEIGHT = 300; // пониже, чтобы имя горизонтально смотрелось логичнее
+    const ITEM_WIDTH = 140;
+    const ITEM_HEIGHT = 320;
 
-    let mode = "move"; // 'move' или 'draw'
-    let tool = "brush"; // 'brush' или 'eraser'
+    let mode = "move";   // 'move' | 'draw'
+    let tool = "brush";  // 'brush' | 'eraser'
     let currentColor = "#111827";
     let currentSize = 3;
 
@@ -406,20 +533,33 @@
     let drawing = false;
     let currentStroke = null;
 
+    let hoverItem = null;
+
     const paletteContainer = document.getElementById("palette");
-    const framesListEl = document.getElementById("framesList");
-    const modeButton = document.getElementById("btnMode");
-    const modeIndicator = document.getElementById("modeIndicator");
-    const colorInput = document.getElementById("brushColor");
-    const sizeInput = document.getElementById("brushSize");
-    const btnBrush = document.getElementById("btnBrush");
-    const btnEraser = document.getElementById("btnEraser");
+    const framesListEl   = document.getElementById("framesList");
+    const modeButton     = document.getElementById("btnMode");
+    const modeIndicator  = document.getElementById("modeIndicator");
+    const colorInput     = document.getElementById("brushColor");
+    const sizeInput      = document.getElementById("brushSize");
+    const btnBrush       = document.getElementById("btnBrush");
+    const btnEraser      = document.getElementById("btnEraser");
+
+    const btnSaveProject   = document.getElementById("btnSaveProject");
+    const btnLoadProject   = document.getElementById("btnLoadProject");
+    const projectFileInput = document.getElementById("projectFile");
+    const projectNameInput = document.getElementById("projectName");
+
+    const notesEditor      = document.getElementById("notesEditor");
+    const btnNotesBold     = document.getElementById("btnNotesBold");
+    const btnNotesItalic   = document.getElementById("btnNotesItalic");
+    const btnNotesUnderline= document.getElementById("btnNotesUnderline");
+    const btnNotesList     = document.getElementById("btnNotesList");
+    const notesFontSizeSel = document.getElementById("notesFontSize");
+    const btnNotesImage    = document.getElementById("btnNotesImage");
+    const notesImageInput  = document.getElementById("notesImageInput");
 
     function createEmptyFrame() {
-      return {
-        items: [],
-        strokes: []
-      };
+      return { items: [], strokes: [], notesHtml: "" };
     }
 
     function cloneFrame(frame) {
@@ -429,7 +569,8 @@
           color: s.color,
           width: s.width,
           points: s.points.map(p => ({ ...p }))
-        }))
+        })),
+        notesHtml: frame.notesHtml || ""
       };
     }
 
@@ -443,8 +584,10 @@
       setupPaletteDrag();
       setupCanvasDnDAndDrawing();
       setupButtons();
-      setupFileLoader();
+      setupCharacterFileLoader();
+      setupNotesEditor();
       updateFramesList();
+      loadCurrentNotes();
       drawScene();
     }
 
@@ -476,13 +619,10 @@
 
       ctx.beginPath();
       ctx.moveTo(pts[0].x, pts[0].y);
-      for (let i = 1; i < pts.length; i++) {
-        ctx.lineTo(pts[i].x, pts[i].y);
-      }
+      for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
       ctx.stroke();
     }
 
-    // Горизонтальное имя по центру прямоугольника
     function drawName(text, x, y, w, h) {
       ctx.save();
       ctx.fillStyle = "#111827";
@@ -493,7 +633,6 @@
       const centerX = x + w / 2;
       const centerY = y + h / 2;
 
-      // если имя слишком длинное, немного уменьшим шрифт
       let fontSize = 16;
       ctx.font = fontSize + "px Arial";
       let metrics = ctx.measureText(text);
@@ -505,6 +644,33 @@
       }
 
       ctx.fillText(text, centerX, centerY);
+      ctx.restore();
+    }
+
+    function drawDeleteBadge(item) {
+      const size = 18;
+      const padding = 6;
+      const x = item.x + ITEM_WIDTH - size - padding;
+      const y = item.y + padding;
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.roundRect(x, y, size, size, 4);
+      ctx.fillStyle = "rgba(239,68,68,0.9)";
+      ctx.fill();
+      ctx.strokeStyle = "#fee2e2";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.strokeStyle = "#fef2f2";
+      ctx.lineWidth = 2;
+      const inset = 4;
+      ctx.moveTo(x + inset, y + inset);
+      ctx.lineTo(x + size - inset, y + size - inset);
+      ctx.moveTo(x + size - inset, y + inset);
+      ctx.lineTo(x + inset, y + size - inset);
+      ctx.stroke();
       ctx.restore();
     }
 
@@ -530,13 +696,10 @@
       drawGuideLine();
 
       const frame = getCurrentFrame();
+      frame.strokes.forEach(drawStroke);
+      frame.items.forEach(drawItem);
 
-      for (const stroke of frame.strokes) {
-        drawStroke(stroke);
-      }
-      for (const item of frame.items) {
-        drawItem(item);
-      }
+      if (hoverItem && mode === "move") drawDeleteBadge(hoverItem);
     }
 
     function setupPaletteDrag() {
@@ -550,15 +713,12 @@
     }
 
     function setupCanvasDnDAndDrawing() {
-      canvas.addEventListener("dragover", e => {
-        e.preventDefault();
-      });
+      canvas.addEventListener("dragover", e => e.preventDefault());
 
       canvas.addEventListener("drop", e => {
         e.preventDefault();
         const label = e.dataTransfer.getData("text/plain");
         if (!label) return;
-
         const { x, y } = getMousePos(e);
         addItem(label, x, y);
       });
@@ -567,6 +727,14 @@
         const { x, y } = getMousePos(e);
 
         if (mode === "move") {
+          if (hoverItem && isInDeleteButton(x, y, hoverItem)) {
+            const frame = getCurrentFrame();
+            frame.items = frame.items.filter(i => i !== hoverItem);
+            hoverItem = null;
+            drawScene();
+            return;
+          }
+
           const item = hitTest(x, y);
           if (item) {
             draggingItem = item;
@@ -591,10 +759,18 @@
       canvas.addEventListener("mousemove", e => {
         const { x, y } = getMousePos(e);
 
-        if (mode === "move" && draggingItem) {
-          draggingItem.x = x - dragOffsetX;
-          draggingItem.y = y - dragOffsetY;
-          drawScene();
+        if (mode === "move") {
+          const itemUnderCursor = hitTest(x, y);
+          const changed = itemUnderCursor !== hoverItem;
+          hoverItem = itemUnderCursor;
+
+          if (draggingItem) {
+            draggingItem.x = x - dragOffsetX;
+            draggingItem.y = y - dragOffsetY;
+            drawScene();
+          } else if (changed) {
+            drawScene();
+          }
         } else if (mode === "draw" && drawing && currentStroke) {
           currentStroke.points.push({ x, y });
           drawScene();
@@ -630,27 +806,28 @@
       const frame = getCurrentFrame();
       for (let i = frame.items.length - 1; i >= 0; i--) {
         const item = frame.items[i];
-        const w = ITEM_WIDTH;
-        const h = ITEM_HEIGHT;
         if (
-          x >= item.x && x <= item.x + w &&
-          y >= item.y && y <= item.y + h
-        ) {
-          return item;
-        }
+          x >= item.x && x <= item.x + ITEM_WIDTH &&
+          y >= item.y && y <= item.y + ITEM_HEIGHT
+        ) return item;
       }
       return null;
     }
 
+    function isInDeleteButton(x, y, item) {
+      const size = 18;
+      const padding = 6;
+      const bx = item.x + ITEM_WIDTH - size - padding;
+      const by = item.y + padding;
+      return x >= bx && x <= bx + size && y >= by && y <= by + size;
+    }
+
     function addItem(label, x, y) {
       const frame = getCurrentFrame();
-      const w = ITEM_WIDTH;
-      const h = ITEM_HEIGHT;
-
       const item = {
         id: nextItemId++,
-        x: x - w / 2,
-        y: y - h / 2,
+        x: x - ITEM_WIDTH / 2,
+        y: y - ITEM_HEIGHT / 2,
         label
       };
       frame.items.push(item);
@@ -669,12 +846,11 @@
       });
 
       document.getElementById("btnClear").addEventListener("click", () => {
-        if (!confirm("Очистить текущий кадр? Это удалит всех персонажей и рисунок на этом кадре.")) {
-          return;
-        }
+        if (!confirm("Очистить текущий кадр? Это удалит всех персонажей и рисунок на этом кадре.")) return;
         const frame = getCurrentFrame();
         frame.items = [];
         frame.strokes = [];
+        hoverItem = null;
         drawScene();
       });
 
@@ -682,20 +858,24 @@
         if (mode === "move") {
           mode = "draw";
           modeButton.textContent = "Режим: рисование";
-          modeIndicator.textContent = "Сейчас: рисование по сцене. Нажми кнопку, чтобы вернуться к перемещению персонажей.";
+          modeIndicator.textContent = "Сейчас: рисование по сцене. Нажми «Режим», чтобы вернуться к перемещению.";
         } else {
           mode = "move";
           modeButton.textContent = "Режим: перемещение";
-          modeIndicator.textContent = "Сейчас: перемещение персонажей. Нажми кнопку, чтобы перейти в режим рисования.";
+          modeIndicator.textContent = "Сейчас: перемещение персонажей. Нажми «Режим», чтобы рисовать.";
         }
+        drawScene();
       });
 
       document.getElementById("btnAddFrame").addEventListener("click", () => {
+        saveCurrentNotes();
         const current = getCurrentFrame();
         const newFrame = cloneFrame(current);
         frames.push(newFrame);
         activeFrameIndex = frames.length - 1;
+        hoverItem = null;
         updateFramesList();
+        loadCurrentNotes();
         drawScene();
       });
 
@@ -704,14 +884,13 @@
           alert("Нельзя удалить единственный кадр.");
           return;
         }
-        if (!confirm("Удалить текущий кадр? Его содержимое будет потеряно.")) {
-          return;
-        }
+        if (!confirm("Удалить текущий кадр? Его содержимое будет потеряно.")) return;
+        saveCurrentNotes();
         frames.splice(activeFrameIndex, 1);
-        if (activeFrameIndex >= frames.length) {
-          activeFrameIndex = frames.length - 1;
-        }
+        if (activeFrameIndex >= frames.length) activeFrameIndex = frames.length - 1;
+        hoverItem = null;
         updateFramesList();
+        loadCurrentNotes();
         drawScene();
       });
 
@@ -735,6 +914,126 @@
         btnEraser.classList.add("selected");
         btnBrush.classList.remove("selected");
       });
+
+      // Сохранение проекта
+      btnSaveProject.addEventListener("click", () => {
+        const name = (projectNameInput.value || "").trim();
+        if (!name) {
+          alert("Сначала укажите название проекта.");
+          return;
+        }
+        saveCurrentNotes();
+
+        const project = {
+          version: 1,
+          projectName: name,
+          canvas: { width: canvas.width, height: canvas.height },
+          frames: frames,
+          activeFrameIndex: activeFrameIndex
+        };
+        const blob = new Blob([JSON.stringify(project)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = name + ".json";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+
+      // Загрузка проекта (кнопка открывает input)
+      btnLoadProject.addEventListener("click", () => {
+        projectFileInput.click();
+      });
+
+      // Загрузка проекта (сам input)
+      projectFileInput.addEventListener("change", e => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const ok = confirm(
+          "Загрузить проект из файла?\nТекущий проект будет полностью удалён и заменён. " +
+          "Убедитесь, что вы его сохранили."
+        );
+        if (!ok) {
+          projectFileInput.value = "";
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = evt => {
+          try {
+            const data = JSON.parse(evt.target.result);
+            if (!data || !Array.isArray(data.frames)) {
+              alert("Неверный формат проектного файла.");
+              return;
+            }
+
+            frames.length = 0;
+            data.frames.forEach(f => {
+              const frame = {
+                items: Array.isArray(f.items)
+                  ? f.items.map(i => ({
+                      id: typeof i.id === "number" ? i.id : nextItemId++,
+                      x: typeof i.x === "number" ? i.x : 0,
+                      y: typeof i.y === "number" ? i.y : 0,
+                      label: typeof i.label === "string" ? i.label : ""
+                    }))
+                  : [],
+                strokes: Array.isArray(f.strokes)
+                  ? f.strokes.map(s => ({
+                      color: typeof s.color === "string" ? s.color : "#111827",
+                      width: typeof s.width === "number" ? s.width : 3,
+                      points: Array.isArray(s.points)
+                        ? s.points.map(p => ({
+                            x: typeof p.x === "number" ? p.x : 0,
+                            y: typeof p.y === "number" ? p.y : 0
+                          }))
+                        : []
+                    }))
+                  : [],
+                notesHtml: typeof f.notesHtml === "string" ? f.notesHtml : ""
+              };
+              frames.push(frame);
+            });
+
+            if (frames.length === 0) frames.push(createEmptyFrame());
+
+            activeFrameIndex = typeof data.activeFrameIndex === "number"
+              ? Math.min(Math.max(0, data.activeFrameIndex), frames.length - 1)
+              : 0;
+
+            // project name
+            if (typeof data.projectName === "string") {
+              projectNameInput.value = data.projectName;
+            }
+
+            let maxId = 0;
+            frames.forEach(f => {
+              f.items.forEach(i => {
+                if (typeof i.id === "number" && i.id > maxId) maxId = i.id;
+              });
+            });
+            nextItemId = maxId + 1;
+
+            hoverItem = null;
+            draggingItem = null;
+            drawing = false;
+            currentStroke = null;
+
+            updateFramesList();
+            loadCurrentNotes();
+            drawScene();
+          } catch (err) {
+            console.error(err);
+            alert("Не удалось прочитать проектный файл.");
+          } finally {
+            projectFileInput.value = "";
+          }
+        };
+        reader.readAsText(file, "utf-8");
+      });
     }
 
     function updateFramesList() {
@@ -743,17 +1042,19 @@
         const btn = document.createElement("button");
         btn.className = "frame-item" + (index === activeFrameIndex ? " active" : "");
         btn.textContent = "Кадр " + (index + 1);
-        btn.dataset.index = index;
         btn.addEventListener("click", () => {
+          saveCurrentNotes();
           activeFrameIndex = index;
+          hoverItem = null;
           updateFramesList();
+          loadCurrentNotes();
           drawScene();
         });
         framesListEl.appendChild(btn);
       });
     }
 
-    function setupFileLoader() {
+    function setupCharacterFileLoader() {
       const fileInput = document.getElementById("charactersFile");
       fileInput.addEventListener("change", e => {
         const file = e.target.files[0];
@@ -766,7 +1067,6 @@
             .split(/\r?\n/)
             .map(line => line.trim())
             .filter(Boolean);
-
           if (names.length === 0) return;
           buildPalette(names);
         };
@@ -785,6 +1085,79 @@
         paletteContainer.appendChild(div);
       });
       setupPaletteDrag();
+    }
+
+    /* --- Заметки кадра --- */
+
+    function setupNotesEditor() {
+      btnNotesBold.addEventListener("click", () => {
+        document.execCommand("bold", false, null);
+        notesEditor.focus();
+      });
+
+      btnNotesItalic.addEventListener("click", () => {
+        document.execCommand("italic", false, null);
+        notesEditor.focus();
+      });
+
+      btnNotesUnderline.addEventListener("click", () => {
+        document.execCommand("underline", false, null);
+        notesEditor.focus();
+      });
+
+      btnNotesList.addEventListener("click", () => {
+        document.execCommand("insertUnorderedList", false, null);
+        notesEditor.focus();
+      });
+
+      notesFontSizeSel.addEventListener("change", () => {
+        const val = notesFontSizeSel.value;
+        if (val) {
+          document.execCommand("fontSize", false, val);
+          notesFontSizeSel.value = "";
+          notesEditor.focus();
+        }
+      });
+
+      btnNotesImage.addEventListener("click", () => {
+        notesImageInput.click();
+      });
+
+      notesImageInput.addEventListener("change", e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = evt => {
+          insertImageAtCursor(evt.target.result);
+          notesImageInput.value = "";
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function insertImageAtCursor(src) {
+      const img = document.createElement("img");
+      img.src = src;
+      img.alt = "";
+
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0) {
+        notesEditor.appendChild(img);
+        return;
+      }
+      const range = sel.getRangeAt(0);
+      range.deleteContents();
+      range.insertNode(img);
+    }
+
+    function saveCurrentNotes() {
+      const frame = getCurrentFrame();
+      frame.notesHtml = notesEditor.innerHTML;
+    }
+
+    function loadCurrentNotes() {
+      const frame = getCurrentFrame();
+      notesEditor.innerHTML = frame.notesHtml || "";
     }
 
     init();

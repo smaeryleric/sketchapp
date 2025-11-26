@@ -2,11 +2,9 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Sketch Animation Board 1280x720</title>
+  <title>Sprunki Sketch Animation Board</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -194,6 +192,22 @@
       cursor: pointer;
     }
 
+    .size-label {
+      font-size: 11px;
+      color: #4b5563;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid #d1d5db;
+      background: #ffffff;
+    }
+
+    .size-label input[type="range"] {
+      width: 80px;
+    }
+
     .small-btn {
       padding: 6px 10px;
       font-size: 11px;
@@ -216,7 +230,7 @@
 
     .stage-wrapper {
       background: #f3f4f6;
-      padding: 16px 16px 14px;
+      padding: 16px 16px 10px;
       border-radius: 18px;
       box-shadow:
         0 24px 60px rgba(15, 23, 42, 0.18),
@@ -228,16 +242,15 @@
       width: 100%;
     }
 
-    /* холст визуально уменьшаем, но реальное разрешение остаётся 1280x720 */
     #stage {
       border-radius: 12px;
       display: block;
       background: #ffffff;
       cursor: default;
       border: 1px solid #d1d5db;
-      width: 100%;         /* подгон под контейнер */
-      height: auto;        /* сохраняем пропорции */
-      max-width: 960px;    /* чтобы точно влезал в экран */
+      width: 100%;
+      height: auto;
+      max-width: 960px;
       margin: 0 auto;
     }
 
@@ -247,17 +260,30 @@
       color: #6b7280;
     }
 
-    .frames-block {
-      margin-top: 8px;
+    .timeline-bar {
+      margin-top: 6px;
+      border-top: 1px solid #e5e7eb;
+      padding-top: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .timeline-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
     }
 
     .frames-list {
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
-      margin-top: 6px;
-      max-height: 120px;
+      max-height: 80px;
       overflow-y: auto;
+      flex: 1;
     }
 
     .frame-item {
@@ -284,19 +310,17 @@
       color: #1e40af;
     }
 
-    .frames-actions {
+    .timeline-actions {
       display: flex;
-      gap: 8px;
-      margin-top: 6px;
-      flex-wrap: wrap;
+      gap: 6px;
+      flex-wrap: nowrap;
     }
   </style>
 </head>
 <body>
   <aside class="sidebar">
     <div class="sidebar-header">
-      <h1>Sketch Animation</h1>
-      <p class="sidebar-subtitle">Покадровые скетчи 1280×720 с персонажами и рисованием</p>
+      <h1>Sprunki Sketch Animation Board</h1>
     </div>
 
     <div class="section">
@@ -308,44 +332,35 @@
     </div>
 
     <div class="section">
-      <div class="section-title">Палитра персонажей</div>
+      <div class="section-title">Персонажи</div>
       <div class="palette" id="palette"></div>
       <p class="small-text">
-        Перетащи персонажа на белый холст. На сцене он станет прямоугольником с вертикальным именем.
+        Перетащи персонажа на белый холст.
       </p>
     </div>
 
     <div class="section">
-      <div class="section-title">Работа с кадром</div>
+      <div class="section-title">Режим и рисование</div>
       <div class="controls">
-        <button id="btnDownload" class="btn-primary">Сохранить кадр PNG 1280×720</button>
-        <button id="btnClear">Очистить текущий кадр</button>
         <button id="btnMode">Режим: перемещение</button>
         <span class="mode-indicator" id="modeIndicator">
           Сейчас: перемещение персонажей. Нажми кнопку, чтобы перейти в режим рисования.
         </span>
+        <button id="btnClear">Очистить текущий кадр</button>
       </div>
 
       <div class="draw-tools">
         <label class="color-label">
-          Цвет кисти
+          Цвет
           <input type="color" id="brushColor" value="#111827" />
+        </label>
+        <label class="size-label">
+          Размер
+          <input type="range" id="brushSize" min="1" max="20" value="3" />
         </label>
         <button id="btnBrush" class="small-btn selected">Кисть</button>
         <button id="btnEraser" class="small-btn">Ластик</button>
       </div>
-    </div>
-
-    <div class="section frames-block">
-      <div class="section-title">Кадры анимации</div>
-      <div class="frames-list" id="framesList"></div>
-      <div class="frames-actions">
-        <button id="btnAddFrame">Добавить кадр</button>
-        <button id="btnDeleteFrame">Удалить кадр</button>
-      </div>
-      <p class="small-text">
-        Новый кадр создаётся как копия текущего. Удаление и очистка кадров требуют подтверждения.
-      </p>
     </div>
   </aside>
 
@@ -353,7 +368,17 @@
     <div class="stage-wrapper">
       <canvas id="stage" width="1280" height="720"></canvas>
       <div class="canvas-label">
-        Холст 1280×720 (уменьшенный на экране). Чуть ниже середины проведена горизонтальная линия для композиции.
+      </div>
+
+      <div class="timeline-bar">
+        <div class="timeline-row">
+          <div class="frames-list" id="framesList"></div>
+          <div class="timeline-actions">
+            <button id="btnAddFrame" class="small-btn">Добавить кадр</button>
+            <button id="btnDeleteFrame" class="small-btn">Удалить кадр</button>
+            <button id="btnDownload" class="small-btn btn-primary">Скачать кадр</button>
+          </div>
+        </div>
       </div>
     </div>
   </main>
@@ -362,12 +387,13 @@
     const canvas = document.getElementById("stage");
     const ctx = canvas.getContext("2d");
 
-    const ITEM_WIDTH = 120;
-    const ITEM_HEIGHT = 280;
+    const ITEM_WIDTH = 160;
+    const ITEM_HEIGHT = 300; // пониже, чтобы имя горизонтально смотрелось логичнее
 
     let mode = "move"; // 'move' или 'draw'
     let tool = "brush"; // 'brush' или 'eraser'
     let currentColor = "#111827";
+    let currentSize = 3;
 
     const frames = [];
     let activeFrameIndex = 0;
@@ -385,6 +411,7 @@
     const modeButton = document.getElementById("btnMode");
     const modeIndicator = document.getElementById("modeIndicator");
     const colorInput = document.getElementById("brushColor");
+    const sizeInput = document.getElementById("brushSize");
     const btnBrush = document.getElementById("btnBrush");
     const btnEraser = document.getElementById("btnEraser");
 
@@ -455,24 +482,29 @@
       ctx.stroke();
     }
 
-    function drawVerticalName(text, x, y, w, h) {
+    // Горизонтальное имя по центру прямоугольника
+    function drawName(text, x, y, w, h) {
       ctx.save();
       ctx.fillStyle = "#111827";
-      ctx.font = "18px Arial";
+      ctx.font = "16px Arial";
       ctx.textAlign = "center";
-      ctx.textBaseline = "top";
+      ctx.textBaseline = "middle";
 
-      const chars = [...text];
-      const lineHeight = 20;
-      const totalHeight = chars.length * lineHeight;
-      let startY = y + (h - totalHeight) / 2;
       const centerX = x + w / 2;
+      const centerY = y + h / 2;
 
-      chars.forEach(ch => {
-        ctx.fillText(ch, centerX, startY);
-        startY += lineHeight;
-      });
+      // если имя слишком длинное, немного уменьшим шрифт
+      let fontSize = 16;
+      ctx.font = fontSize + "px Arial";
+      let metrics = ctx.measureText(text);
+      const maxWidth = w - 10;
 
+      if (metrics.width > maxWidth) {
+        fontSize = Math.max(10, Math.floor(fontSize * maxWidth / metrics.width));
+        ctx.font = fontSize + "px Arial";
+      }
+
+      ctx.fillText(text, centerX, centerY);
       ctx.restore();
     }
 
@@ -490,7 +522,7 @@
       ctx.lineWidth = 2;
       ctx.strokeRect(item.x, item.y, w, h);
 
-      drawVerticalName(item.label, item.x, item.y, w, h);
+      drawName(item.label, item.x, item.y, w, h);
     }
 
     function drawScene() {
@@ -548,7 +580,7 @@
           const color = tool === "eraser" ? "#ffffff" : currentColor;
           currentStroke = {
             color,
-            width: 3,
+            width: currentSize,
             points: [{ x, y }]
           };
           frame.strokes.push(currentStroke);
@@ -584,7 +616,6 @@
       });
     }
 
-    // учитываем масштаб: CSS-ширина != 1280
     function getMousePos(e) {
       const rect = canvas.getBoundingClientRect();
       const scaleX = canvas.width / rect.width;
@@ -686,6 +717,11 @@
 
       colorInput.addEventListener("input", e => {
         currentColor = e.target.value || "#111827";
+      });
+
+      sizeInput.addEventListener("input", e => {
+        const v = parseInt(e.target.value, 10);
+        currentSize = isNaN(v) ? 3 : v;
       });
 
       btnBrush.addEventListener("click", () => {

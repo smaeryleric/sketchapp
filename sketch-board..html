@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sketch Animation Board 1280x720</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      display: flex;
+      height: 100vh;
+      background: #f5f5f5;
+      color: #111827;
+    }
+
+    .sidebar {
+      width: 320px;
+      padding: 20px 18px;
+      border-right: 1px solid #e5e7eb;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      box-shadow: 4px 0 18px rgba(15, 23, 42, 0.06);
+    }
+
+    .sidebar-header {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .sidebar h1 {
+      font-size: 20px;
+      margin: 0;
+      letter-spacing: 0.04em;
+    }
+
+    .sidebar-subtitle {
+      font-size: 12px;
+      margin: 0;
+      color: #6b7280;
+    }
+
+    .section-title {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #9ca3af;
+      margin-bottom: 4px;
+    }
+
+    .section {
+      border-radius: 12px;
+      padding: 10px 10px 12px;
+      background: #fafafa;
+      border: 1px solid #e5e7eb;
+    }
+
+    .section + .section {
+      margin-top: 4px;
+    }
+
+    .small-text {
+      font-size: 12px;
+      color: #6b7280;
+      margin: 4px 0 0;
+    }
+
+    .palette {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+      min-height: 60px;
+    }
+
+    .palette-item {
+      width: 56px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      background: #ffffff;
+      font-size: 20px;
+      font-weight: 600;
+      cursor: grab;
+      user-select: none;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease, background 0.12s ease;
+    }
+
+    .palette-item:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 12px rgba(15, 23, 42, 0.12);
+      border-color: #38bdf8;
+      background: #f9fafb;
+    }
+
+    .palette-item:active {
+      cursor: grabbing;
+      transform: scale(0.97);
+      box-shadow: 0 0 0 rgba(0, 0, 0, 0.1);
+    }
+
+    input[type="file"] {
+      font-size: 12px;
+      width: 100%;
+      color: #374151;
+    }
+
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    button {
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid #d1d5db;
+      background: #ffffff;
+      color: #111827;
+      font-size: 13px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background 0.15s ease, transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+      white-space: nowrap;
+    }
+
+    button:hover {
+      background: #f3f4f6;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 12px rgba(15, 23, 42, 0.12);
+      border-color: #38bdf8;
+    }
+
+    button:active {
+      transform: translateY(0);
+      box-shadow: 0 0 0 rgba(0, 0, 0, 0.08);
+    }
+
+    .btn-primary {
+      border-color: #0ea5e9;
+      background: linear-gradient(135deg, #0ea5e9, #2563eb);
+      color: #f9fafb;
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #22c1f1, #3b82f6);
+    }
+
+    .mode-indicator {
+      font-size: 11px;
+      color: #6b7280;
+      margin-top: 2px;
+    }
+
+    .draw-tools {
+      margin-top: 6px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .color-label {
+      font-size: 11px;
+      color: #4b5563;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid #d1d5db;
+      background: #ffffff;
+    }
+
+    .color-label input[type="color"] {
+      border: none;
+      padding: 0;
+      width: 22px;
+      height: 22px;
+      background: none;
+      cursor: pointer;
+    }
+
+    .small-btn {
+      padding: 6px 10px;
+      font-size: 11px;
+    }
+
+    .small-btn.selected {
+      border-color: #0ea5e9;
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .main {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      overflow: auto;
+    }
+
+    .stage-wrapper {
+      background: #f3f4f6;
+      padding: 16px 16px 14px;
+      border-radius: 18px;
+      box-shadow:
+        0 24px 60px rgba(15, 23, 42, 0.18),
+        0 0 0 1px rgba(209, 213, 219, 0.8);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-width: 1000px;
+      width: 100%;
+    }
+
+    /* холст визуально уменьшаем, но реальное разрешение остаётся 1280x720 */
+    #stage {
+      border-radius: 12px;
+      display: block;
+      background: #ffffff;
+      cursor: default;
+      border: 1px solid #d1d5db;
+      width: 100%;         /* подгон под контейнер */
+      height: auto;        /* сохраняем пропорции */
+      max-width: 960px;    /* чтобы точно влезал в экран */
+      margin: 0 auto;
+    }
+
+    .canvas-label {
+      text-align: center;
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .frames-block {
+      margin-top: 8px;
+    }
+
+    .frames-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+
+    .frame-item {
+      padding: 4px 10px;
+      font-size: 12px;
+      border-radius: 999px;
+      border: 1px solid #d1d5db;
+      background: #ffffff;
+      cursor: pointer;
+      color: #374151;
+      transition: background 0.15s ease, transform 0.12s ease, border-color 0.12s ease;
+    }
+
+    .frame-item:hover {
+      transform: translateY(-1px);
+      border-color: #38bdf8;
+      background: #f3f4f6;
+    }
+
+    .frame-item.active {
+      border-color: #0ea5e9;
+      background: #dbeafe;
+      font-weight: 600;
+      color: #1e40af;
+    }
+
+    .frames-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h1>Sketch Animation</h1>
+      <p class="sidebar-subtitle">Покадровые скетчи 1280×720 с персонажами и рисованием</p>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Персонажи из файла</div>
+      <input type="file" id="charactersFile" accept=".txt" />
+      <p class="small-text">
+        Формат: один персонаж в строке. После загрузки имена появятся в палитре ниже.
+      </p>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Палитра персонажей</div>
+      <div class="palette" id="palette"></div>
+      <p class="small-text">
+        Перетащи персонажа на белый холст. На сцене он станет прямоугольником с вертикальным именем.
+      </p>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Работа с кадром</div>
+      <div class="controls">
+        <button id="btnDownload" class="btn-primary">Сохранить кадр PNG 1280×720</button>
+        <button id="btnClear">Очистить текущий кадр</button>
+        <button id="btnMode">Режим: перемещение</button>
+        <span class="mode-indicator" id="modeIndicator">
+          Сейчас: перемещение персонажей. Нажми кнопку, чтобы перейти в режим рисования.
+        </span>
+      </div>
+
+      <div class="draw-tools">
+        <label class="color-label">
+          Цвет кисти
+          <input type="color" id="brushColor" value="#111827" />
+        </label>
+        <button id="btnBrush" class="small-btn selected">Кисть</button>
+        <button id="btnEraser" class="small-btn">Ластик</button>
+      </div>
+    </div>
+
+    <div class="section frames-block">
+      <div class="section-title">Кадры анимации</div>
+      <div class="frames-list" id="framesList"></div>
+      <div class="frames-actions">
+        <button id="btnAddFrame">Добавить кадр</button>
+        <button id="btnDeleteFrame">Удалить кадр</button>
+      </div>
+      <p class="small-text">
+        Новый кадр создаётся как копия текущего. Удаление и очистка кадров требуют подтверждения.
+      </p>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="stage-wrapper">
+      <canvas id="stage" width="1280" height="720"></canvas>
+      <div class="canvas-label">
+        Холст 1280×720 (уменьшенный на экране). Чуть ниже середины проведена горизонтальная линия для композиции.
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const canvas = document.getElementById("stage");
+    const ctx = canvas.getContext("2d");
+
+    const ITEM_WIDTH = 120;
+    const ITEM_HEIGHT = 280;
+
+    let mode = "move"; // 'move' или 'draw'
+    let tool = "brush"; // 'brush' или 'eraser'
+    let currentColor = "#111827";
+
+    const frames = [];
+    let activeFrameIndex = 0;
+    let nextItemId = 1;
+
+    let draggingItem = null;
+    let dragOffsetX = 0;
+    let dragOffsetY = 0;
+
+    let drawing = false;
+    let currentStroke = null;
+
+    const paletteContainer = document.getElementById("palette");
+    const framesListEl = document.getElementById("framesList");
+    const modeButton = document.getElementById("btnMode");
+    const modeIndicator = document.getElementById("modeIndicator");
+    const colorInput = document.getElementById("brushColor");
+    const btnBrush = document.getElementById("btnBrush");
+    const btnEraser = document.getElementById("btnEraser");
+
+    function createEmptyFrame() {
+      return {
+        items: [],
+        strokes: []
+      };
+    }
+
+    function cloneFrame(frame) {
+      return {
+        items: frame.items.map(i => ({ ...i })),
+        strokes: frame.strokes.map(s => ({
+          color: s.color,
+          width: s.width,
+          points: s.points.map(p => ({ ...p }))
+        }))
+      };
+    }
+
+    function getCurrentFrame() {
+      return frames[activeFrameIndex];
+    }
+
+    function init() {
+      ctx.textBaseline = "top";
+      frames.push(createEmptyFrame());
+      setupPaletteDrag();
+      setupCanvasDnDAndDrawing();
+      setupButtons();
+      setupFileLoader();
+      updateFramesList();
+      drawScene();
+    }
+
+    function clearBackground() {
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function drawGuideLine() {
+      const y = canvas.height * 0.58;
+      ctx.save();
+      ctx.strokeStyle = "#e5e7eb";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([10, 8]);
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(canvas.width, y);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawStroke(stroke) {
+      const pts = stroke.points;
+      if (pts.length < 2) return;
+      ctx.strokeStyle = stroke.color;
+      ctx.lineWidth = stroke.width;
+      ctx.lineJoin = "round";
+      ctx.lineCap = "round";
+
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
+      for (let i = 1; i < pts.length; i++) {
+        ctx.lineTo(pts[i].x, pts[i].y);
+      }
+      ctx.stroke();
+    }
+
+    function drawVerticalName(text, x, y, w, h) {
+      ctx.save();
+      ctx.fillStyle = "#111827";
+      ctx.font = "18px Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+
+      const chars = [...text];
+      const lineHeight = 20;
+      const totalHeight = chars.length * lineHeight;
+      let startY = y + (h - totalHeight) / 2;
+      const centerX = x + w / 2;
+
+      chars.forEach(ch => {
+        ctx.fillText(ch, centerX, startY);
+        startY += lineHeight;
+      });
+
+      ctx.restore();
+    }
+
+    function drawItem(item) {
+      const w = ITEM_WIDTH;
+      const h = ITEM_HEIGHT;
+
+      ctx.fillStyle = "rgba(15,23,42,0.08)";
+      ctx.fillRect(item.x + 4, item.y + 4, w, h);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(item.x, item.y, w, h);
+
+      ctx.strokeStyle = "#111827";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(item.x, item.y, w, h);
+
+      drawVerticalName(item.label, item.x, item.y, w, h);
+    }
+
+    function drawScene() {
+      clearBackground();
+      drawGuideLine();
+
+      const frame = getCurrentFrame();
+
+      for (const stroke of frame.strokes) {
+        drawStroke(stroke);
+      }
+      for (const item of frame.items) {
+        drawItem(item);
+      }
+    }
+
+    function setupPaletteDrag() {
+      const paletteItems = document.querySelectorAll(".palette-item");
+      paletteItems.forEach(el => {
+        el.addEventListener("dragstart", e => {
+          const label = el.dataset.label;
+          e.dataTransfer.setData("text/plain", label);
+        });
+      });
+    }
+
+    function setupCanvasDnDAndDrawing() {
+      canvas.addEventListener("dragover", e => {
+        e.preventDefault();
+      });
+
+      canvas.addEventListener("drop", e => {
+        e.preventDefault();
+        const label = e.dataTransfer.getData("text/plain");
+        if (!label) return;
+
+        const { x, y } = getMousePos(e);
+        addItem(label, x, y);
+      });
+
+      canvas.addEventListener("mousedown", e => {
+        const { x, y } = getMousePos(e);
+
+        if (mode === "move") {
+          const item = hitTest(x, y);
+          if (item) {
+            draggingItem = item;
+            dragOffsetX = x - item.x;
+            dragOffsetY = y - item.y;
+            canvas.style.cursor = "grabbing";
+          }
+        } else if (mode === "draw") {
+          drawing = true;
+          const frame = getCurrentFrame();
+          const color = tool === "eraser" ? "#ffffff" : currentColor;
+          currentStroke = {
+            color,
+            width: 3,
+            points: [{ x, y }]
+          };
+          frame.strokes.push(currentStroke);
+          drawScene();
+        }
+      });
+
+      canvas.addEventListener("mousemove", e => {
+        const { x, y } = getMousePos(e);
+
+        if (mode === "move" && draggingItem) {
+          draggingItem.x = x - dragOffsetX;
+          draggingItem.y = y - dragOffsetY;
+          drawScene();
+        } else if (mode === "draw" && drawing && currentStroke) {
+          currentStroke.points.push({ x, y });
+          drawScene();
+        }
+      });
+
+      canvas.addEventListener("mouseup", () => {
+        draggingItem = null;
+        drawing = false;
+        currentStroke = null;
+        canvas.style.cursor = "default";
+      });
+
+      canvas.addEventListener("mouseleave", () => {
+        draggingItem = null;
+        drawing = false;
+        currentStroke = null;
+        canvas.style.cursor = "default";
+      });
+    }
+
+    // учитываем масштаб: CSS-ширина != 1280
+    function getMousePos(e) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      return {
+        x: (e.clientX - rect.left) * scaleX,
+        y: (e.clientY - rect.top) * scaleY
+      };
+    }
+
+    function hitTest(x, y) {
+      const frame = getCurrentFrame();
+      for (let i = frame.items.length - 1; i >= 0; i--) {
+        const item = frame.items[i];
+        const w = ITEM_WIDTH;
+        const h = ITEM_HEIGHT;
+        if (
+          x >= item.x && x <= item.x + w &&
+          y >= item.y && y <= item.y + h
+        ) {
+          return item;
+        }
+      }
+      return null;
+    }
+
+    function addItem(label, x, y) {
+      const frame = getCurrentFrame();
+      const w = ITEM_WIDTH;
+      const h = ITEM_HEIGHT;
+
+      const item = {
+        id: nextItemId++,
+        x: x - w / 2,
+        y: y - h / 2,
+        label
+      };
+      frame.items.push(item);
+      drawScene();
+    }
+
+    function setupButtons() {
+      document.getElementById("btnDownload").addEventListener("click", () => {
+        const dataURL = canvas.toDataURL("image/png");
+        const a = document.createElement("a");
+        a.href = dataURL;
+        a.download = `frame_${activeFrameIndex + 1}.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      });
+
+      document.getElementById("btnClear").addEventListener("click", () => {
+        if (!confirm("Очистить текущий кадр? Это удалит всех персонажей и рисунок на этом кадре.")) {
+          return;
+        }
+        const frame = getCurrentFrame();
+        frame.items = [];
+        frame.strokes = [];
+        drawScene();
+      });
+
+      modeButton.addEventListener("click", () => {
+        if (mode === "move") {
+          mode = "draw";
+          modeButton.textContent = "Режим: рисование";
+          modeIndicator.textContent = "Сейчас: рисование по сцене. Нажми кнопку, чтобы вернуться к перемещению персонажей.";
+        } else {
+          mode = "move";
+          modeButton.textContent = "Режим: перемещение";
+          modeIndicator.textContent = "Сейчас: перемещение персонажей. Нажми кнопку, чтобы перейти в режим рисования.";
+        }
+      });
+
+      document.getElementById("btnAddFrame").addEventListener("click", () => {
+        const current = getCurrentFrame();
+        const newFrame = cloneFrame(current);
+        frames.push(newFrame);
+        activeFrameIndex = frames.length - 1;
+        updateFramesList();
+        drawScene();
+      });
+
+      document.getElementById("btnDeleteFrame").addEventListener("click", () => {
+        if (frames.length === 1) {
+          alert("Нельзя удалить единственный кадр.");
+          return;
+        }
+        if (!confirm("Удалить текущий кадр? Его содержимое будет потеряно.")) {
+          return;
+        }
+        frames.splice(activeFrameIndex, 1);
+        if (activeFrameIndex >= frames.length) {
+          activeFrameIndex = frames.length - 1;
+        }
+        updateFramesList();
+        drawScene();
+      });
+
+      colorInput.addEventListener("input", e => {
+        currentColor = e.target.value || "#111827";
+      });
+
+      btnBrush.addEventListener("click", () => {
+        tool = "brush";
+        btnBrush.classList.add("selected");
+        btnEraser.classList.remove("selected");
+      });
+
+      btnEraser.addEventListener("click", () => {
+        tool = "eraser";
+        btnEraser.classList.add("selected");
+        btnBrush.classList.remove("selected");
+      });
+    }
+
+    function updateFramesList() {
+      framesListEl.innerHTML = "";
+      frames.forEach((frame, index) => {
+        const btn = document.createElement("button");
+        btn.className = "frame-item" + (index === activeFrameIndex ? " active" : "");
+        btn.textContent = "Кадр " + (index + 1);
+        btn.dataset.index = index;
+        btn.addEventListener("click", () => {
+          activeFrameIndex = index;
+          updateFramesList();
+          drawScene();
+        });
+        framesListEl.appendChild(btn);
+      });
+    }
+
+    function setupFileLoader() {
+      const fileInput = document.getElementById("charactersFile");
+      fileInput.addEventListener("change", e => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = evt => {
+          const text = evt.target.result;
+          const names = text
+            .split(/\r?\n/)
+            .map(line => line.trim())
+            .filter(Boolean);
+
+          if (names.length === 0) return;
+          buildPalette(names);
+        };
+        reader.readAsText(file, "utf-8");
+      });
+    }
+
+    function buildPalette(names) {
+      paletteContainer.innerHTML = "";
+      names.forEach(name => {
+        const div = document.createElement("div");
+        div.className = "palette-item";
+        div.draggable = true;
+        div.dataset.label = name;
+        div.textContent = name[0] || "?";
+        paletteContainer.appendChild(div);
+      });
+      setupPaletteDrag();
+    }
+
+    init();
+  </script>
+</body>
+</html>

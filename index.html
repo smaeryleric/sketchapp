@@ -2,517 +2,448 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Sketch Animation Board 1280x720</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Sketch Animator Pro</title>
   <style>
+    :root {
+      --bg-app: #1e1e1e;
+      --bg-panel: #2b2b2b;
+      --bg-canvas: #555555;
+      --border: #3f3f3f;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --text-main: #e5e7eb;
+      --text-muted: #9ca3af;
+      --input-bg: #181818;
+    }
+
     * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      display: flex;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg-app);
+      color: var(--text-main);
       height: 100vh;
-      background: #f5f5f5;
-      color: #111827;
+      display: grid;
+      grid-template-rows: 48px 1fr 100px; /* Header, Main, Timeline */
+      grid-template-columns: 60px 1fr 300px; /* Toolbar, Canvas, Sidebar */
+      overflow: hidden;
     }
 
-    .sidebar {
-      width: 280px;
-      padding: 20px 18px;
-      border-right: 1px solid #e5e7eb;
-      background: #ffffff;
+    /* --- ICONS --- */
+    svg { width: 20px; height: 20px; fill: currentColor; }
+
+    /* --- HEADER (Top Bar) --- */
+    header {
+      grid-column: 1 / -1;
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border);
       display: flex;
-      flex-direction: column;
-      gap: 18px;
-      box-shadow: 4px 0 18px rgba(15, 23, 42, 0.06);
+      align-items: center;
+      padding: 0 16px;
+      justify-content: space-between;
+      z-index: 10;
     }
 
-    .sidebar-right {
-      border-right: none;
-      border-left: 1px solid #e5e7eb;
-      box-shadow: -4px 0 18px rgba(15, 23, 42, 0.06);
-    }
-
-    .sidebar-header {
+    .app-title {
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: 0.05em;
+      color: #fff;
       display: flex;
-      flex-direction: column;
-      gap: 6px;
+      align-items: center;
+      gap: 10px;
     }
 
-    .sidebar h1 {
-      font-size: 20px;
-      margin: 0;
-      letter-spacing: 0.04em;
+    .project-controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
     }
 
-    .sidebar-subtitle {
-      font-size: 12px;
-      margin: 0;
-      color: #6b7280;
-    }
-
-    .project-name-input {
-      width: 100%;
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid #d1d5db;
+    .input-dark {
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      color: white;
+      padding: 6px 12px;
+      border-radius: 4px;
       font-size: 13px;
       outline: none;
-      transition: border-color 0.12s ease, box-shadow 0.12s ease;
+    }
+    .input-dark:focus { border-color: var(--accent); }
+
+    .btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: 0.2s;
+    }
+    .btn:hover { background: rgba(255,255,255,0.05); border-color: #666; }
+    .btn-primary { background: var(--accent); border-color: var(--accent); color: white; }
+    .btn-primary:hover { background: var(--accent-hover); }
+
+    /* --- TOOLBAR (Left) --- */
+    .toolbar {
+      grid-row: 2 / 3;
+      grid-column: 1 / 2;
+      background: var(--bg-panel);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 12px 0;
+      gap: 8px;
     }
 
-    .project-name-input:focus {
-      border-color: #0ea5e9;
-      box-shadow: 0 0 0 1px rgba(14,165,233,0.3);
+    .tool-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 6px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: 0.2s;
     }
+    .tool-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    .tool-btn.active { background: rgba(59, 130, 246, 0.2); color: var(--accent); }
 
-    .section-title {
-      font-size: 13px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: #9ca3af;
-      margin-bottom: 4px;
-    }
+    .separator { width: 30px; height: 1px; background: var(--border); margin: 4px 0; }
 
-    .section {
-      border-radius: 12px;
-      padding: 10px 10px 12px;
-      background: #fafafa;
-      border: 1px solid #e5e7eb;
-    }
-
-    .section + .section {
+    .color-picker-wrap {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 2px solid var(--border);
+      cursor: pointer;
       margin-top: 4px;
     }
+    .color-picker-wrap input { opacity: 0; width: 200%; height: 200%; cursor: pointer; }
 
-    .small-text {
-      font-size: 12px;
-      color: #6b7280;
-      margin: 4px 0 0;
-    }
-
-    .palette {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 8px;
-      min-height: 60px;
-    }
-
-    .palette-item {
-      width: 56px;
-      height: 56px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 10px;
-      border: 1px solid #d1d5db;
-      background: #ffffff;
-      font-size: 20px;
-      font-weight: 600;
-      cursor: grab;
-      user-select: none;
-      transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease, background 0.12s ease;
-    }
-
-    .palette-item:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 12px rgba(15, 23, 42, 0.12);
-      border-color: #38bdf8;
-      background: #f9fafb;
-    }
-
-    .palette-item:active {
-      cursor: grabbing;
-      transform: scale(0.97);
-      box-shadow: 0 0 0 rgba(0, 0, 0, 0.1);
-    }
-
-    input[type="file"] {
-      font-size: 12px;
-      width: 100%;
-      color: #374151;
-    }
-
-    button {
-      padding: 8px 10px;
-      border-radius: 999px;
-      border: 1px solid #d1d5db;
-      background: #ffffff;
-      color: #111827;
-      font-size: 13px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      transition: background 0.15s ease, transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
-      white-space: nowrap;
-    }
-
-    button:hover {
-      background: #f3f4f6;
-      transform: translateY(-1px);
-      box-shadow: 0 6px 12px rgba(15, 23, 42, 0.12);
-      border-color: #38bdf8;
-    }
-
-    button:active {
-      transform: translateY(0);
-      box-shadow: 0 0 0 rgba(0, 0, 0, 0.08);
-    }
-
-    .btn-primary {
-      border-color: #0ea5e9;
-      background: linear-gradient(135deg, #0ea5e9, #2563eb);
-      color: #f9fafb;
-    }
-
-    .btn-primary:hover {
-      background: linear-gradient(135deg, #22c1f1, #3b82f6);
-    }
-
-    .small-btn {
-      padding: 6px 10px;
-      font-size: 11px;
-    }
-
-    .small-btn.selected {
-      border-color: #0ea5e9;
-      background: #dbeafe;
-      color: #1e40af;
-    }
-
-    .color-label {
-      font-size: 11px;
-      color: #4b5563;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 4px 8px;
-      border-radius: 999px;
-      border: 1px solid #d1d5db;
-      background: #ffffff;
-    }
-
-    .color-label input[type="color"] {
-      border: none;
-      padding: 0;
-      width: 22px;
-      height: 22px;
-      background: none;
-      cursor: pointer;
-    }
-
-    .size-label {
-      font-size: 11px;
-      color: #4b5563;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 4px 8px;
-      border-radius: 999px;
-      border: 1px solid #d1d5db;
-      background: #ffffff;
-    }
-
-    .size-label input[type="range"] {
-      width: 80px;
-    }
-
-    .mode-indicator {
-      font-size: 11px;
-      color: #6b7280;
-      margin-top: 2px;
-    }
-
-    .main {
-      flex: 1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-      overflow: auto;
-    }
-
-    .stage-wrapper {
-      background: #ffffff;
-      padding: 10px 16px 10px;
-      border-radius: 18px;
-      box-shadow:
-        0 24px 60px rgba(15, 23, 42, 0.18),
-        0 0 0 1px rgba(209, 213, 219, 0.8);
+    /* --- WORKSPACE (Center) --- */
+    .workspace {
+      grid-row: 2 / 3;
+      grid-column: 2 / 3;
+      background: var(--bg-canvas);
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      max-width: 1000px;
-      width: 100%;
-    }
-
-    .top-bar {
-      display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid #e5e7eb;
-      background: #f9fafb;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
     }
 
-    .top-bar-left,
-    .top-bar-right {
+    .canvas-container {
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+      background: #fff;
+      transition: transform 0.1s;
+    }
+
+    #stage { display: block; }
+    
+    .guide-label {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.6);
+      color: white;
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      pointer-events: none;
+    }
+
+    /* --- SIDEBAR (Right) --- */
+    .sidebar-right {
+      grid-row: 2 / 4; /* Spans timeline height too for better vertical space */
+      grid-column: 3 / 4;
+      background: var(--bg-panel);
+      border-left: 1px solid var(--border);
       display: flex;
-      align-items: center;
-      gap: 6px;
-      flex-wrap: wrap;
+      flex-direction: column;
+      overflow: hidden;
     }
 
-    #stage {
-      border-radius: 12px;
-      display: block;
-      background: #ffffff;
-      cursor: default;
-      border: 1px solid #d1d5db;
-      width: 100%;
-      height: auto;
-      max-width: 960px;
-      margin: 0 auto;
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
     }
-
-    .canvas-label {
+    .tab {
+      flex: 1;
+      padding: 12px;
       text-align: center;
       font-size: 12px;
-      color: #6b7280;
+      cursor: pointer;
+      color: var(--text-muted);
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+    }
+    .tab.active { color: white; border-bottom-color: var(--accent); background: rgba(255,255,255,0.02); }
+
+    .panel-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: none;
+    }
+    .panel-content.active { display: block; }
+
+    .panel-section { margin-bottom: 24px; }
+    .panel-title { 
+      font-size: 11px; text-transform: uppercase; color: var(--text-muted); 
+      margin-bottom: 8px; letter-spacing: 0.05em; 
     }
 
-    .timeline-bar {
-      margin-top: 6px;
-      border-top: 1px solid #e5e7eb;
-      padding-top: 6px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
+    /* Characters Palette */
+    .palette-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+      gap: 8px;
     }
-
-    .timeline-row {
+    .char-card {
+      aspect-ratio: 1;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      flex-wrap: wrap;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 18px;
+      cursor: grab;
+      user-select: none;
+      transition: 0.2s;
     }
+    .char-card:hover { border-color: var(--accent); background: rgba(59,130,246,0.1); }
+    .char-card:active { cursor: grabbing; transform: scale(0.95); }
 
-    .frames-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      max-height: 80px;
-      overflow-y: auto;
-      flex: 1;
+    /* Notes Editor */
+    .toolbar-notes { display: flex; gap: 4px; margin-bottom: 8px; flex-wrap: wrap; }
+    .btn-icon-sm {
+      padding: 4px 6px; font-size: 12px; min-width: 24px;
+      background: var(--input-bg); border: 1px solid var(--border);
+      color: #fff; border-radius: 3px; cursor: pointer;
     }
+    .btn-icon-sm:hover { border-color: var(--text-muted); }
 
-    .frame-item {
-      padding: 4px 10px;
-      font-size: 12px;
-      border-radius: 999px;
-      border: 1px solid #d1d5db;
-      background: #ffffff;
-      cursor: pointer;
-      color: #374151;
-      transition: background 0.15s ease, transform 0.12s ease, border-color 0.12s ease;
-    }
-
-    .frame-item:hover {
-      transform: translateY(-1px);
-      border-color: #38bdf8;
-      background: #f3f4f6;
-    }
-
-    .frame-item.active {
-      border-color: #0ea5e9;
-      background: #dbeafe;
-      font-weight: 600;
-      color: #1e40af;
-    }
-
-    .timeline-actions {
-      display: flex;
-      gap: 6px;
-      flex-wrap: nowrap;
-    }
-
-    /* Правый редактор заметок */
-
-    .notes-toolbar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 4px;
-      margin-top: 6px;
-      margin-bottom: 6px;
-    }
-
-    .notes-toolbar button,
-    .notes-toolbar select {
-      font-size: 11px;
-      padding: 4px 8px;
-      border-radius: 999px;
-      border: 1px solid #d1d5db;
-      background: #ffffff;
-      cursor: pointer;
-    }
-
-    .notes-toolbar button:hover {
-      background: #f3f4f6;
-    }
-
-    .notes-editor {
-      background: #ffffff;
-      border-radius: 10px;
-      border: 1px solid #d1d5db;
-      min-height: 260px;
-      padding: 8px 10px;
-      font-size: 13px;
-      overflow-y: auto;
-    }
-
-    .notes-editor:focus {
+    .notes-area {
+      width: 100%;
+      min-height: 300px;
+      background: #fff;
+      color: #000;
+      padding: 10px;
+      border-radius: 4px;
+      font-size: 14px;
+      line-height: 1.5;
       outline: none;
-      border-color: #0ea5e9;
-      box-shadow: 0 0 0 1px rgba(14,165,233,0.3);
+    }
+    .notes-area img { max-width: 100%; }
+
+    /* --- TIMELINE (Bottom) --- */
+    .timeline {
+      grid-row: 3 / 4;
+      grid-column: 1 / 3;
+      background: #222;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .timeline-controls {
+      height: 32px;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      gap: 10px;
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border);
     }
 
-    .notes-editor img {
-      max-width: 100%;
-      display: block;
-      margin: 4px 0;
+    .frames-track {
+      flex: 1;
+      overflow-x: auto;
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      gap: 8px;
+      /* Custom scrollbar */
+      scrollbar-width: thin;
+      scrollbar-color: #555 transparent;
     }
+    .frames-track::-webkit-scrollbar { height: 6px; }
+    .frames-track::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
+
+    .frame-thumb {
+      min-width: 100px;
+      height: 56px; /* 16:9 ratio approx */
+      background: #fff;
+      border-radius: 4px;
+      border: 2px solid transparent;
+      position: relative;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: #999;
+      transition: 0.2s;
+    }
+    .frame-thumb:hover { transform: translateY(-2px); }
+    .frame-thumb.active { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(59,130,246,0.3); }
+    .frame-number {
+      position: absolute;
+      bottom: 2px; left: 4px;
+      font-size: 9px;
+      color: #000;
+      background: rgba(255,255,255,0.8);
+      padding: 1px 3px;
+      border-radius: 2px;
+    }
+
+    /* Utility */
+    .hidden-file { display: none; }
+    .text-hint { font-size: 11px; color: var(--text-muted); margin-top: 4px; line-height: 1.4; }
   </style>
 </head>
 <body>
-  <!-- Левое меню -->
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      <h1>Sketch Animation</h1>
-      <input
-        id="projectName"
-        class="project-name-input"
-        type="text"
-        placeholder="Название проекта"
-      />
-      <p class="sidebar-subtitle">Покадровые скетчи 1280×720</p>
+
+  <header>
+    <div class="app-title">
+      <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM5 19V5h14v14H5zm7-2h5v2h-5zm-5 0h3v2H7zM7 7h10v8H7z"/></svg>
+      SKETCH BOARD
     </div>
 
-    <div class="section">
-      <div class="section-title">Проект</div>
-      <div style="display:flex; flex-direction:column; gap:6px;">
-        <button id="btnSaveProject" class="small-btn">Сохранить проект (.json)</button>
-        <button id="btnLoadProject" class="small-btn">Загрузить проект (.json)</button>
-        <input type="file" id="projectFile" accept=".json" style="display:none" />
-        <p class="small-text">
-          Перед загрузкой проект текущая сцена будет очищена. Убедитесь, что вы её сохранили.
-        </p>
-      </div>
+    <div class="project-controls">
+      <input id="projectName" class="input-dark" type="text" placeholder="Название проекта" />
+      <button id="btnSaveProject" class="btn" title="Сохранить JSON">
+        <svg viewBox="0 0 24 24"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
+        Сохранить
+      </button>
+      <button id="btnLoadProject" class="btn" title="Открыть JSON">
+        <svg viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+        Открыть
+      </button>
+      <input type="file" id="projectFile" accept=".json" class="hidden-file" />
+    </div>
+  </header>
+
+  <aside class="toolbar">
+    <button id="btnModeMove" class="tool-btn active" title="Перемещение (V)">
+      <svg viewBox="0 0 24 24"><path d="M10 9h4V6h3l-5-5-5 5h3v3zm-1 1H6V7l-5 5 5 5v-3h3v-4zm14 2l-5-5v3h-3v4h3v3l5-5zm-9 3h-4v3H7l5 5 5-5h-3v-3z"/></svg>
+    </button>
+    <button id="btnModeBrush" class="tool-btn" title="Кисть (B)">
+      <svg viewBox="0 0 24 24"><path d="M7 14c-1.66 0-3 1.34-3 3 0 1.31-1.16 2-2 2 .92 1.22 2.49 2 4 2 2.21 0 4-1.79 4-4 0-1.66-1.34-3-3-3zm13.71-9.37l-1.34-1.34c-.39-.39-1.02-.39-1.41 0L9 12.25 11.75 15l8.96-8.96c.39-.39.39-1.02 0-1.41z"/></svg>
+    </button>
+    <button id="btnModeEraser" class="tool-btn" title="Ластик (E)">
+      <svg viewBox="0 0 24 24"><path d="M15.14 3c-.51 0-1.02.2-1.41.59L2.59 14.73c-.78.78-.78 2.05 0 2.83L5.17 20c.78.78 2.05.78 2.83 0l11.14-11.14c.79-.78.79-2.05 0-2.83l-2.58-2.58C16.16 3.2 15.65 3 15.14 3zM17 18H7v-2h10v2z"/></svg>
+    </button>
+    
+    <div class="separator"></div>
+
+    <div class="color-picker-wrap" title="Цвет кисти">
+      <input type="color" id="brushColor" value="#111827">
+    </div>
+    
+    <div style="padding: 8px 0; text-align: center;">
+      <div style="font-size:9px; color:#666; margin-bottom:2px;">РАЗМЕР</div>
+      <input type="range" id="brushSize" min="1" max="40" value="3" style="width: 40px; transform: rotate(-90deg); margin: 15px 0;">
     </div>
 
-    <div class="section">
-      <div class="section-title">Персонажи из файла</div>
-      <input type="file" id="charactersFile" accept=".txt" />
-      <p class="small-text">
-        Формат: один персонаж в строке. После загрузки имена появятся в палитре ниже.
-      </p>
-    </div>
+    <div class="separator"></div>
 
-    <div class="section">
-      <div class="section-title">Палитра персонажей</div>
-      <div class="palette" id="palette"></div>
-      <p class="small-text">
-        Перетащи персонажа на холст — появится прямоугольник с именем.
-      </p>
-    </div>
+    <button id="btnClear" class="tool-btn" title="Очистить кадр">
+      <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+    </button>
   </aside>
 
-  <!-- Центральный блок -->
-  <main class="main">
-    <div class="stage-wrapper">
-      <div class="top-bar">
-        <div class="top-bar-left">
-          <button id="btnMode">Режим: перемещение</button>
-          <button id="btnBrush" class="small-btn selected">Кисть</button>
-          <button id="btnEraser" class="small-btn">Ластик</button>
-          <button id="btnClear" class="small-btn">Очистить кадр</button>
-        </div>
-        <div class="top-bar-right">
-          <label class="color-label">
-            Цвет
-            <input type="color" id="brushColor" value="#111827" />
-          </label>
-          <label class="size-label">
-            Размер
-            <input type="range" id="brushSize" min="1" max="20" value="3" />
-          </label>
-        </div>
-      </div>
-      <div class="mode-indicator" id="modeIndicator">
-        Сейчас: перемещение персонажей. Нажми «Режим», чтобы рисовать.
-      </div>
-
+  <main class="workspace" id="workspaceContainer">
+    <div class="canvas-container" id="canvasWrapper">
       <canvas id="stage" width="1280" height="720"></canvas>
-      <div class="canvas-label">
-        Холст 1280×720 (уменьшенный на экране). Чуть ниже середины есть направляющая горизонтальная линия.
-      </div>
-
-      <div class="timeline-bar">
-        <div class="timeline-row">
-          <div class="frames-list" id="framesList"></div>
-          <div class="timeline-actions">
-            <button id="btnAddFrame" class="small-btn">Добавить кадр</button>
-            <button id="btnDeleteFrame" class="small-btn">Удалить кадр</button>
-            <button id="btnDownload" class="small-btn btn-primary">Скачать кадр</button>
-          </div>
-        </div>
-      </div>
     </div>
+    <div class="guide-label" id="statusLabel">Режим перемещения</div>
   </main>
 
-  <!-- Правое меню: заметки кадра -->
-  <aside class="sidebar sidebar-right">
-    <div class="sidebar-header">
-      <h1>Заметки кадра</h1>
-      <p class="sidebar-subtitle">Текст и изображения, привязанные к выбранному кадру.</p>
+  <aside class="sidebar-right">
+    <div class="tabs">
+      <button class="tab active" data-target="panel-library">Персонажи</button>
+      <button class="tab" data-target="panel-notes">Заметки</button>
     </div>
 
-    <div class="section">
-      <div class="section-title">Форматирование</div>
-      <div class="notes-toolbar">
-        <button type="button" id="btnNotesBold"><b>B</b></button>
-        <button type="button" id="btnNotesItalic"><i>I</i></button>
-        <button type="button" id="btnNotesUnderline"><u>U</u></button>
-        <button type="button" id="btnNotesList">• Список</button>
-        <select id="notesFontSize">
-          <option value="">Размер</option>
-          <option value="2">Малый</option>
-          <option value="3">Нормальный</option>
-          <option value="4">Крупный</option>
-          <option value="5">Заголовок</option>
-        </select>
-        <button type="button" id="btnNotesImage">Картинка…</button>
-        <input type="file" id="notesImageInput" accept="image/*" style="display:none" />
+    <div id="panel-library" class="panel-content active">
+      <div class="panel-section">
+        <div class="panel-title">Загрузка списка</div>
+        <button class="btn" style="width:100%" onclick="document.getElementById('charactersFile').click()">
+          <svg viewBox="0 0 24 24" style="margin-right:4px"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg> Загрузить .txt
+        </button>
+        <input type="file" id="charactersFile" accept=".txt" class="hidden-file" />
+        <div class="text-hint">Формат: имя на каждой строке.</div>
       </div>
-      <div
-        id="notesEditor"
-        class="notes-editor"
-        contenteditable="true"
-        spellcheck="false"
-      ></div>
-      <p class="small-text">
-        Каждому кадру соответствует свой текст/верстка. При переключении кадра содержимое сохраняется автоматически.
-      </p>
+
+      <div class="panel-section">
+        <div class="panel-title">Палитра (Drag & Drop)</div>
+        <div class="palette-grid" id="palette"></div>
+        <div class="text-hint" style="margin-top:10px; text-align:center;">
+          Перетащи блок на холст
+        </div>
+      </div>
+    </div>
+
+    <div id="panel-notes" class="panel-content">
+      <div class="panel-section">
+        <div class="panel-title">Описание кадра</div>
+        <div class="toolbar-notes">
+          <button type="button" id="btnNotesBold" class="btn-icon-sm"><b>B</b></button>
+          <button type="button" id="btnNotesItalic" class="btn-icon-sm"><i>I</i></button>
+          <button type="button" id="btnNotesList" class="btn-icon-sm">• Список</button>
+          <button type="button" id="btnNotesImage" class="btn-icon-sm">IMG</button>
+          <select id="notesFontSize" class="btn-icon-sm" style="width:auto">
+            <option value="">A</option>
+            <option value="5">H1</option>
+            <option value="3">Norm</option>
+          </select>
+        </div>
+        <div id="notesEditor" class="notes-area" contenteditable="true" spellcheck="false"></div>
+        <input type="file" id="notesImageInput" accept="image/*" class="hidden-file" />
+      </div>
     </div>
   </aside>
 
+  <footer class="timeline">
+    <div class="timeline-controls">
+      <button id="btnAddFrame" class="btn btn-primary">
+        <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg> Кадр
+      </button>
+      <button id="btnDeleteFrame" class="btn">
+        <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg> Удалить
+      </button>
+      <div style="flex:1"></div>
+      <button id="btnDownload" class="btn">Экспорт PNG</button>
+    </div>
+    <div class="frames-track" id="framesList">
+      </div>
+  </footer>
+
   <script>
+    /* --- LOGIC PRESERVED & ADAPTED --- */
     const canvas = document.getElementById("stage");
     const ctx = canvas.getContext("2d");
+    const container = document.getElementById("canvasWrapper");
+    const workspace = document.getElementById("workspaceContainer");
 
     const ITEM_WIDTH = 140;
     const ITEM_HEIGHT = 320;
@@ -525,39 +456,52 @@
     const frames = [];
     let activeFrameIndex = 0;
     let nextItemId = 1;
-
     let draggingItem = null;
-    let dragOffsetX = 0;
-    let dragOffsetY = 0;
-
+    let dragOffsetX = 0, dragOffsetY = 0;
     let drawing = false;
     let currentStroke = null;
-
     let hoverItem = null;
 
+    // UI Refs
     const paletteContainer = document.getElementById("palette");
     const framesListEl   = document.getElementById("framesList");
-    const modeButton     = document.getElementById("btnMode");
-    const modeIndicator  = document.getElementById("modeIndicator");
     const colorInput     = document.getElementById("brushColor");
     const sizeInput      = document.getElementById("brushSize");
-    const btnBrush       = document.getElementById("btnBrush");
-    const btnEraser      = document.getElementById("btnEraser");
+    const btnMove        = document.getElementById("btnModeMove");
+    const btnBrush       = document.getElementById("btnModeBrush");
+    const btnEraser      = document.getElementById("btnModeEraser");
+    const statusLabel    = document.getElementById("statusLabel");
+    
+    // Notes
+    const notesEditor = document.getElementById("notesEditor");
 
-    const btnSaveProject   = document.getElementById("btnSaveProject");
-    const btnLoadProject   = document.getElementById("btnLoadProject");
-    const projectFileInput = document.getElementById("projectFile");
-    const projectNameInput = document.getElementById("projectName");
+    // Scale Logic
+    function resizeCanvas() {
+      // Fit 1280x720 into available space with margin
+      const margin = 40;
+      const availableW = workspace.clientWidth - margin;
+      const availableH = workspace.clientHeight - margin;
+      const aspect = 1280 / 720;
+      
+      let w = availableW;
+      let h = w / aspect;
 
-    const notesEditor      = document.getElementById("notesEditor");
-    const btnNotesBold     = document.getElementById("btnNotesBold");
-    const btnNotesItalic   = document.getElementById("btnNotesItalic");
-    const btnNotesUnderline= document.getElementById("btnNotesUnderline");
-    const btnNotesList     = document.getElementById("btnNotesList");
-    const notesFontSizeSel = document.getElementById("notesFontSize");
-    const btnNotesImage    = document.getElementById("btnNotesImage");
-    const notesImageInput  = document.getElementById("notesImageInput");
+      if (h > availableH) {
+        h = availableH;
+        w = h * aspect;
+      }
 
+      const scale = w / 1280;
+      container.style.width = "1280px";
+      container.style.height = "720px";
+      container.style.transform = `scale(${scale})`;
+      container.style.transformOrigin = "center center";
+    }
+    window.addEventListener('resize', resizeCanvas);
+    // Initial call
+    setTimeout(resizeCanvas, 10);
+
+    /* --- DATA MODEL --- */
     function createEmptyFrame() {
       return { items: [], strokes: [], notesHtml: "" };
     }
@@ -565,32 +509,14 @@
     function cloneFrame(frame) {
       return {
         items: frame.items.map(i => ({ ...i })),
-        strokes: frame.strokes.map(s => ({
-          color: s.color,
-          width: s.width,
-          points: s.points.map(p => ({ ...p }))
-        })),
+        strokes: frame.strokes.map(s => ({ ...s, points: s.points.map(p => ({ ...p })) })),
         notesHtml: frame.notesHtml || ""
       };
     }
 
-    function getCurrentFrame() {
-      return frames[activeFrameIndex];
-    }
+    function getCurrentFrame() { return frames[activeFrameIndex]; }
 
-    function init() {
-      ctx.textBaseline = "top";
-      frames.push(createEmptyFrame());
-      setupPaletteDrag();
-      setupCanvasDnDAndDrawing();
-      setupButtons();
-      setupCharacterFileLoader();
-      setupNotesEditor();
-      updateFramesList();
-      loadCurrentNotes();
-      drawScene();
-    }
-
+    /* --- DRAWING ENGINE --- */
     function clearBackground() {
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -616,7 +542,6 @@
       ctx.lineWidth = stroke.width;
       ctx.lineJoin = "round";
       ctx.lineCap = "round";
-
       ctx.beginPath();
       ctx.moveTo(pts[0].x, pts[0].y);
       for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
@@ -626,172 +551,54 @@
     function drawName(text, x, y, w, h) {
       ctx.save();
       ctx.fillStyle = "#111827";
-      ctx.font = "16px Arial";
+      ctx.font = "bold 16px Inter, Arial";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-
-      const centerX = x + w / 2;
-      const centerY = y + h / 2;
-
-      let fontSize = 16;
-      ctx.font = fontSize + "px Arial";
-      let metrics = ctx.measureText(text);
-      const maxWidth = w - 10;
-
-      if (metrics.width > maxWidth) {
-        fontSize = Math.max(10, Math.floor(fontSize * maxWidth / metrics.width));
-        ctx.font = fontSize + "px Arial";
-      }
-
-      ctx.fillText(text, centerX, centerY);
-      ctx.restore();
-    }
-
-    function drawDeleteBadge(item) {
-      const size = 18;
-      const padding = 6;
-      const x = item.x + ITEM_WIDTH - size - padding;
-      const y = item.y + padding;
-
-      ctx.save();
-      ctx.beginPath();
-      ctx.roundRect(x, y, size, size, 4);
-      ctx.fillStyle = "rgba(239,68,68,0.9)";
-      ctx.fill();
-      ctx.strokeStyle = "#fee2e2";
-      ctx.lineWidth = 1;
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.strokeStyle = "#fef2f2";
-      ctx.lineWidth = 2;
-      const inset = 4;
-      ctx.moveTo(x + inset, y + inset);
-      ctx.lineTo(x + size - inset, y + size - inset);
-      ctx.moveTo(x + size - inset, y + inset);
-      ctx.lineTo(x + inset, y + size - inset);
-      ctx.stroke();
+      ctx.fillText(text, x + w / 2, y + h / 2);
       ctx.restore();
     }
 
     function drawItem(item) {
       const w = ITEM_WIDTH;
       const h = ITEM_HEIGHT;
-
-      ctx.fillStyle = "rgba(15,23,42,0.08)";
-      ctx.fillRect(item.x + 4, item.y + 4, w, h);
-
+      // Shadow
+      ctx.fillStyle = "rgba(0,0,0,0.1)";
+      ctx.fillRect(item.x + 6, item.y + 6, w, h);
+      // Body
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(item.x, item.y, w, h);
-
       ctx.strokeStyle = "#111827";
       ctx.lineWidth = 2;
       ctx.strokeRect(item.x, item.y, w, h);
-
       drawName(item.label, item.x, item.y, w, h);
+
+      if (mode === "move" && hoverItem === item) {
+          // Delete Badge
+          const size = 20;
+          const px = item.x + w - size - 5;
+          const py = item.y + 5;
+          ctx.fillStyle = "#ef4444";
+          ctx.beginPath();
+          ctx.arc(px + size/2, py + size/2, size/2, 0, Math.PI*2);
+          ctx.fill();
+          ctx.strokeStyle = "white";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(px+5, py+5); ctx.lineTo(px+15, py+15);
+          ctx.moveTo(px+15, py+5); ctx.lineTo(px+5, py+15);
+          ctx.stroke();
+      }
     }
 
     function drawScene() {
       clearBackground();
       drawGuideLine();
-
       const frame = getCurrentFrame();
       frame.strokes.forEach(drawStroke);
       frame.items.forEach(drawItem);
-
-      if (hoverItem && mode === "move") drawDeleteBadge(hoverItem);
     }
 
-    function setupPaletteDrag() {
-      const paletteItems = document.querySelectorAll(".palette-item");
-      paletteItems.forEach(el => {
-        el.addEventListener("dragstart", e => {
-          const label = el.dataset.label;
-          e.dataTransfer.setData("text/plain", label);
-        });
-      });
-    }
-
-    function setupCanvasDnDAndDrawing() {
-      canvas.addEventListener("dragover", e => e.preventDefault());
-
-      canvas.addEventListener("drop", e => {
-        e.preventDefault();
-        const label = e.dataTransfer.getData("text/plain");
-        if (!label) return;
-        const { x, y } = getMousePos(e);
-        addItem(label, x, y);
-      });
-
-      canvas.addEventListener("mousedown", e => {
-        const { x, y } = getMousePos(e);
-
-        if (mode === "move") {
-          if (hoverItem && isInDeleteButton(x, y, hoverItem)) {
-            const frame = getCurrentFrame();
-            frame.items = frame.items.filter(i => i !== hoverItem);
-            hoverItem = null;
-            drawScene();
-            return;
-          }
-
-          const item = hitTest(x, y);
-          if (item) {
-            draggingItem = item;
-            dragOffsetX = x - item.x;
-            dragOffsetY = y - item.y;
-            canvas.style.cursor = "grabbing";
-          }
-        } else if (mode === "draw") {
-          drawing = true;
-          const frame = getCurrentFrame();
-          const color = tool === "eraser" ? "#ffffff" : currentColor;
-          currentStroke = {
-            color,
-            width: currentSize,
-            points: [{ x, y }]
-          };
-          frame.strokes.push(currentStroke);
-          drawScene();
-        }
-      });
-
-      canvas.addEventListener("mousemove", e => {
-        const { x, y } = getMousePos(e);
-
-        if (mode === "move") {
-          const itemUnderCursor = hitTest(x, y);
-          const changed = itemUnderCursor !== hoverItem;
-          hoverItem = itemUnderCursor;
-
-          if (draggingItem) {
-            draggingItem.x = x - dragOffsetX;
-            draggingItem.y = y - dragOffsetY;
-            drawScene();
-          } else if (changed) {
-            drawScene();
-          }
-        } else if (mode === "draw" && drawing && currentStroke) {
-          currentStroke.points.push({ x, y });
-          drawScene();
-        }
-      });
-
-      canvas.addEventListener("mouseup", () => {
-        draggingItem = null;
-        drawing = false;
-        currentStroke = null;
-        canvas.style.cursor = "default";
-      });
-
-      canvas.addEventListener("mouseleave", () => {
-        draggingItem = null;
-        drawing = false;
-        currentStroke = null;
-        canvas.style.cursor = "default";
-      });
-    }
-
+    /* --- INTERACTIONS --- */
     function getMousePos(e) {
       const rect = canvas.getBoundingClientRect();
       const scaleX = canvas.width / rect.width;
@@ -804,363 +611,279 @@
 
     function hitTest(x, y) {
       const frame = getCurrentFrame();
+      // Reverse order to pick top-most
       for (let i = frame.items.length - 1; i >= 0; i--) {
         const item = frame.items[i];
-        if (
-          x >= item.x && x <= item.x + ITEM_WIDTH &&
-          y >= item.y && y <= item.y + ITEM_HEIGHT
-        ) return item;
+        if (x >= item.x && x <= item.x + ITEM_WIDTH &&
+            y >= item.y && y <= item.y + ITEM_HEIGHT) return item;
       }
       return null;
     }
 
-    function isInDeleteButton(x, y, item) {
-      const size = 18;
-      const padding = 6;
-      const bx = item.x + ITEM_WIDTH - size - padding;
-      const by = item.y + padding;
-      return x >= bx && x <= bx + size && y >= by && y <= by + size;
+    function isInDeleteBtn(x, y, item) {
+       // Simple corner check for the delete badge
+       const btnX = item.x + ITEM_WIDTH - 30; 
+       const btnY = item.y;
+       return (x > btnX && x < item.x + ITEM_WIDTH && y > btnY && y < btnY + 30);
     }
 
-    function addItem(label, x, y) {
-      const frame = getCurrentFrame();
-      const item = {
-        id: nextItemId++,
-        x: x - ITEM_WIDTH / 2,
-        y: y - ITEM_HEIGHT / 2,
-        label
-      };
-      frame.items.push(item);
-      drawScene();
-    }
-
-    function setupButtons() {
-      document.getElementById("btnDownload").addEventListener("click", () => {
-        const dataURL = canvas.toDataURL("image/png");
-        const a = document.createElement("a");
-        a.href = dataURL;
-        a.download = `frame_${activeFrameIndex + 1}.png`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-      });
-
-      document.getElementById("btnClear").addEventListener("click", () => {
-        if (!confirm("Очистить текущий кадр? Это удалит всех персонажей и рисунок на этом кадре.")) return;
-        const frame = getCurrentFrame();
-        frame.items = [];
-        frame.strokes = [];
-        hoverItem = null;
-        drawScene();
-      });
-
-      modeButton.addEventListener("click", () => {
-        if (mode === "move") {
-          mode = "draw";
-          modeButton.textContent = "Режим: рисование";
-          modeIndicator.textContent = "Сейчас: рисование по сцене. Нажми «Режим», чтобы вернуться к перемещению.";
-        } else {
-          mode = "move";
-          modeButton.textContent = "Режим: перемещение";
-          modeIndicator.textContent = "Сейчас: перемещение персонажей. Нажми «Режим», чтобы рисовать.";
-        }
-        drawScene();
-      });
-
-      document.getElementById("btnAddFrame").addEventListener("click", () => {
-        saveCurrentNotes();
-        const current = getCurrentFrame();
-        const newFrame = cloneFrame(current);
-        frames.push(newFrame);
-        activeFrameIndex = frames.length - 1;
-        hoverItem = null;
-        updateFramesList();
-        loadCurrentNotes();
-        drawScene();
-      });
-
-      document.getElementById("btnDeleteFrame").addEventListener("click", () => {
-        if (frames.length === 1) {
-          alert("Нельзя удалить единственный кадр.");
-          return;
-        }
-        if (!confirm("Удалить текущий кадр? Его содержимое будет потеряно.")) return;
-        saveCurrentNotes();
-        frames.splice(activeFrameIndex, 1);
-        if (activeFrameIndex >= frames.length) activeFrameIndex = frames.length - 1;
-        hoverItem = null;
-        updateFramesList();
-        loadCurrentNotes();
-        drawScene();
-      });
-
-      colorInput.addEventListener("input", e => {
-        currentColor = e.target.value || "#111827";
-      });
-
-      sizeInput.addEventListener("input", e => {
-        const v = parseInt(e.target.value, 10);
-        currentSize = isNaN(v) ? 3 : v;
-      });
-
-      btnBrush.addEventListener("click", () => {
-        tool = "brush";
-        btnBrush.classList.add("selected");
-        btnEraser.classList.remove("selected");
-      });
-
-      btnEraser.addEventListener("click", () => {
-        tool = "eraser";
-        btnEraser.classList.add("selected");
-        btnBrush.classList.remove("selected");
-      });
-
-      // Сохранение проекта
-      btnSaveProject.addEventListener("click", () => {
-        const name = (projectNameInput.value || "").trim();
-        if (!name) {
-          alert("Сначала укажите название проекта.");
-          return;
-        }
-        saveCurrentNotes();
-
-        const project = {
-          version: 1,
-          projectName: name,
-          canvas: { width: canvas.width, height: canvas.height },
-          frames: frames,
-          activeFrameIndex: activeFrameIndex
-        };
-        const blob = new Blob([JSON.stringify(project)], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = name + ".json";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      });
-
-      // Загрузка проекта (кнопка открывает input)
-      btnLoadProject.addEventListener("click", () => {
-        projectFileInput.click();
-      });
-
-      // Загрузка проекта (сам input)
-      projectFileInput.addEventListener("change", e => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        const ok = confirm(
-          "Загрузить проект из файла?\nТекущий проект будет полностью удалён и заменён. " +
-          "Убедитесь, что вы его сохранили."
-        );
-        if (!ok) {
-          projectFileInput.value = "";
-          return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = evt => {
-          try {
-            const data = JSON.parse(evt.target.result);
-            if (!data || !Array.isArray(data.frames)) {
-              alert("Неверный формат проектного файла.");
-              return;
-            }
-
-            frames.length = 0;
-            data.frames.forEach(f => {
-              const frame = {
-                items: Array.isArray(f.items)
-                  ? f.items.map(i => ({
-                      id: typeof i.id === "number" ? i.id : nextItemId++,
-                      x: typeof i.x === "number" ? i.x : 0,
-                      y: typeof i.y === "number" ? i.y : 0,
-                      label: typeof i.label === "string" ? i.label : ""
-                    }))
-                  : [],
-                strokes: Array.isArray(f.strokes)
-                  ? f.strokes.map(s => ({
-                      color: typeof s.color === "string" ? s.color : "#111827",
-                      width: typeof s.width === "number" ? s.width : 3,
-                      points: Array.isArray(s.points)
-                        ? s.points.map(p => ({
-                            x: typeof p.x === "number" ? p.x : 0,
-                            y: typeof p.y === "number" ? p.y : 0
-                          }))
-                        : []
-                    }))
-                  : [],
-                notesHtml: typeof f.notesHtml === "string" ? f.notesHtml : ""
-              };
-              frames.push(frame);
-            });
-
-            if (frames.length === 0) frames.push(createEmptyFrame());
-
-            activeFrameIndex = typeof data.activeFrameIndex === "number"
-              ? Math.min(Math.max(0, data.activeFrameIndex), frames.length - 1)
-              : 0;
-
-            // project name
-            if (typeof data.projectName === "string") {
-              projectNameInput.value = data.projectName;
-            }
-
-            let maxId = 0;
-            frames.forEach(f => {
-              f.items.forEach(i => {
-                if (typeof i.id === "number" && i.id > maxId) maxId = i.id;
-              });
-            });
-            nextItemId = maxId + 1;
-
+    /* Event Listeners */
+    canvas.addEventListener("mousedown", e => {
+      const { x, y } = getMousePos(e);
+      if (mode === "move") {
+        const item = hitTest(x, y);
+        if (item) {
+          if (isInDeleteBtn(x, y, item)) {
+            getCurrentFrame().items = getCurrentFrame().items.filter(i => i !== item);
             hoverItem = null;
-            draggingItem = null;
-            drawing = false;
-            currentStroke = null;
+            drawScene();
+            return;
+          }
+          draggingItem = item;
+          dragOffsetX = x - item.x;
+          dragOffsetY = y - item.y;
+          canvas.style.cursor = "grabbing";
+        }
+      } else {
+        drawing = true;
+        const color = tool === "eraser" ? "#ffffff" : currentColor;
+        currentStroke = { color, width: currentSize, points: [{ x, y }] };
+        getCurrentFrame().strokes.push(currentStroke);
+        drawScene();
+      }
+    });
 
-            updateFramesList();
+    canvas.addEventListener("mousemove", e => {
+      const { x, y } = getMousePos(e);
+      if (mode === "move") {
+        const item = hitTest(x, y);
+        if (item !== hoverItem) {
+            hoverItem = item;
+            canvas.style.cursor = item ? "grab" : "default";
+            drawScene();
+        }
+        if (draggingItem) {
+          draggingItem.x = x - dragOffsetX;
+          draggingItem.y = y - dragOffsetY;
+          drawScene();
+        }
+      } else if (drawing && currentStroke) {
+        currentStroke.points.push({ x, y });
+        drawScene();
+      }
+    });
+
+    window.addEventListener("mouseup", () => {
+      draggingItem = null; drawing = false; currentStroke = null;
+      if(mode === "move") canvas.style.cursor = "default";
+    });
+
+    /* Drag & Drop Palette */
+    canvas.addEventListener("dragover", e => e.preventDefault());
+    canvas.addEventListener("drop", e => {
+      e.preventDefault();
+      const label = e.dataTransfer.getData("text/plain");
+      if (!label) return;
+      const { x, y } = getMousePos(e);
+      getCurrentFrame().items.push({
+        id: nextItemId++, x: x - ITEM_WIDTH/2, y: y - ITEM_HEIGHT/2, label
+      });
+      drawScene();
+    });
+
+    /* --- CONTROLS LOGIC --- */
+    function setMode(newMode) {
+      mode = newMode;
+      btnMove.classList.toggle("active", mode === "move");
+      btnBrush.classList.toggle("active", mode === "draw" && tool === "brush");
+      btnEraser.classList.toggle("active", mode === "draw" && tool === "eraser");
+      
+      if(mode === "move") {
+          statusLabel.textContent = "Режим: Перемещение (V)";
+          canvas.style.cursor = "default";
+      } else {
+          statusLabel.textContent = `Режим: ${tool === "brush" ? "Кисть" : "Ластик"}`;
+          canvas.style.cursor = "crosshair";
+      }
+    }
+
+    btnMove.onclick = () => setMode("move");
+    btnBrush.onclick = () => { tool = "brush"; setMode("draw"); };
+    btnEraser.onclick = () => { tool = "eraser"; setMode("draw"); };
+
+    // Keyboard Shortcuts
+    window.addEventListener("keydown", e => {
+        if(e.target.tagName === "INPUT" || e.target.isContentEditable) return;
+        if(e.key.toLowerCase() === "v") setMode("move");
+        if(e.key.toLowerCase() === "b") { tool="brush"; setMode("draw"); }
+        if(e.key.toLowerCase() === "e") { tool="eraser"; setMode("draw"); }
+    });
+
+    colorInput.oninput = e => currentColor = e.target.value;
+    sizeInput.oninput = e => currentSize = parseInt(e.target.value) || 3;
+
+    document.getElementById("btnClear").onclick = () => {
+        if(confirm("Очистить всё на этом кадре?")) {
+            const f = getCurrentFrame();
+            f.items = []; f.strokes = [];
+            drawScene();
+        }
+    };
+
+    /* --- TIMELINE LOGIC --- */
+    function updateFramesUI() {
+      framesListEl.innerHTML = "";
+      frames.forEach((f, idx) => {
+        const div = document.createElement("div");
+        div.className = "frame-thumb" + (idx === activeFrameIndex ? " active" : "");
+        div.onclick = () => {
+            saveCurrentNotes();
+            activeFrameIndex = idx;
             loadCurrentNotes();
             drawScene();
-          } catch (err) {
-            console.error(err);
-            alert("Не удалось прочитать проектный файл.");
-          } finally {
-            projectFileInput.value = "";
-          }
+            updateFramesUI();
         };
-        reader.readAsText(file, "utf-8");
+        // Preview text
+        div.textContent = f.items.length > 0 ? f.items[0].label[0] : (f.strokes.length > 0 ? "~" : "");
+        
+        const num = document.createElement("span");
+        num.className = "frame-number";
+        num.textContent = idx + 1;
+        div.appendChild(num);
+        framesListEl.appendChild(div);
       });
+      framesListEl.scrollTo({ left: framesListEl.scrollWidth, behavior: 'smooth' });
     }
 
-    function updateFramesList() {
-      framesListEl.innerHTML = "";
-      frames.forEach((frame, index) => {
-        const btn = document.createElement("button");
-        btn.className = "frame-item" + (index === activeFrameIndex ? " active" : "");
-        btn.textContent = "Кадр " + (index + 1);
-        btn.addEventListener("click", () => {
-          saveCurrentNotes();
-          activeFrameIndex = index;
-          hoverItem = null;
-          updateFramesList();
-          loadCurrentNotes();
-          drawScene();
+    document.getElementById("btnAddFrame").onclick = () => {
+        saveCurrentNotes();
+        frames.push(cloneFrame(getCurrentFrame()));
+        activeFrameIndex = frames.length - 1;
+        loadCurrentNotes();
+        drawScene();
+        updateFramesUI();
+    };
+
+    document.getElementById("btnDeleteFrame").onclick = () => {
+        if(frames.length <= 1) return alert("Остался последний кадр");
+        if(!confirm("Удалить кадр?")) return;
+        frames.splice(activeFrameIndex, 1);
+        if(activeFrameIndex >= frames.length) activeFrameIndex = frames.length - 1;
+        loadCurrentNotes();
+        drawScene();
+        updateFramesUI();
+    };
+
+    document.getElementById("btnDownload").onclick = () => {
+        const link = document.createElement('a');
+        link.download = `frame_${activeFrameIndex+1}.png`;
+        link.href = canvas.toDataURL();
+        link.click();
+    };
+
+    /* --- RIGHT PANEL TABS --- */
+    const tabs = document.querySelectorAll('.tab');
+    const panels = document.querySelectorAll('.panel-content');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            panels.forEach(p => p.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById(tab.dataset.target).classList.add('active');
         });
-        framesListEl.appendChild(btn);
-      });
-    }
+    });
 
-    function setupCharacterFileLoader() {
-      const fileInput = document.getElementById("charactersFile");
-      fileInput.addEventListener("change", e => {
-        const file = e.target.files[0];
-        if (!file) return;
+    /* --- NOTES LOGIC --- */
+    function saveCurrentNotes() { getCurrentFrame().notesHtml = notesEditor.innerHTML; }
+    function loadCurrentNotes() { notesEditor.innerHTML = getCurrentFrame().notesHtml || ""; }
 
-        const reader = new FileReader();
-        reader.onload = evt => {
-          const text = evt.target.result;
-          const names = text
-            .split(/\r?\n/)
-            .map(line => line.trim())
-            .filter(Boolean);
-          if (names.length === 0) return;
-          buildPalette(names);
-        };
-        reader.readAsText(file, "utf-8");
-      });
-    }
-
-    function buildPalette(names) {
-      paletteContainer.innerHTML = "";
-      names.forEach(name => {
-        const div = document.createElement("div");
-        div.className = "palette-item";
-        div.draggable = true;
-        div.dataset.label = name;
-        div.textContent = name[0] || "?";
-        paletteContainer.appendChild(div);
-      });
-      setupPaletteDrag();
-    }
-
-    /* --- Заметки кадра --- */
-
-    function setupNotesEditor() {
-      btnNotesBold.addEventListener("click", () => {
-        document.execCommand("bold", false, null);
-        notesEditor.focus();
-      });
-
-      btnNotesItalic.addEventListener("click", () => {
-        document.execCommand("italic", false, null);
-        notesEditor.focus();
-      });
-
-      btnNotesUnderline.addEventListener("click", () => {
-        document.execCommand("underline", false, null);
-        notesEditor.focus();
-      });
-
-      btnNotesList.addEventListener("click", () => {
-        document.execCommand("insertUnorderedList", false, null);
-        notesEditor.focus();
-      });
-
-      notesFontSizeSel.addEventListener("change", () => {
-        const val = notesFontSizeSel.value;
-        if (val) {
-          document.execCommand("fontSize", false, val);
-          notesFontSizeSel.value = "";
-          notesEditor.focus();
+    // Notes Toolbar
+    document.getElementById("btnNotesBold").onclick = () => document.execCommand("bold");
+    document.getElementById("btnNotesItalic").onclick = () => document.execCommand("italic");
+    document.getElementById("btnNotesList").onclick = () => document.execCommand("insertUnorderedList");
+    
+    document.getElementById("notesFontSize").onchange = function() {
+        if(this.value) document.execCommand("fontSize", false, this.value);
+        this.value = "";
+    };
+    
+    const imgInp = document.getElementById("notesImageInput");
+    document.getElementById("btnNotesImage").onclick = () => imgInp.click();
+    imgInp.onchange = e => {
+        const f = e.target.files[0];
+        if(f) {
+            const r = new FileReader();
+            r.onload = ev => {
+                document.execCommand("insertImage", false, ev.target.result);
+            };
+            r.readAsDataURL(f);
         }
-      });
+    };
 
-      btnNotesImage.addEventListener("click", () => {
-        notesImageInput.click();
-      });
-
-      notesImageInput.addEventListener("change", e => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = evt => {
-          insertImageAtCursor(evt.target.result);
-          notesImageInput.value = "";
+    /* --- FILES & PALETTE --- */
+    const charInput = document.getElementById("charactersFile");
+    charInput.onchange = e => {
+        const f = e.target.files[0];
+        if(!f) return;
+        const r = new FileReader();
+        r.onload = ev => {
+            const names = ev.target.result.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+            paletteContainer.innerHTML = "";
+            names.forEach(n => {
+                const el = document.createElement("div");
+                el.className = "char-card";
+                el.draggable = true;
+                el.dataset.label = n;
+                el.textContent = n.substring(0,2).toUpperCase();
+                el.title = n;
+                el.addEventListener("dragstart", de => de.dataTransfer.setData("text/plain", n));
+                paletteContainer.appendChild(el);
+            });
         };
-        reader.readAsDataURL(file);
-      });
-    }
+        r.readAsText(f);
+    };
 
-    function insertImageAtCursor(src) {
-      const img = document.createElement("img");
-      img.src = src;
-      img.alt = "";
+    /* --- PROJECT JSON (Simplified) --- */
+    const btnSave = document.getElementById("btnSaveProject");
+    const btnLoad = document.getElementById("btnLoadProject");
+    const fileProj = document.getElementById("projectFile");
 
-      const sel = window.getSelection();
-      if (!sel || sel.rangeCount === 0) {
-        notesEditor.appendChild(img);
-        return;
-      }
-      const range = sel.getRangeAt(0);
-      range.deleteContents();
-      range.insertNode(img);
-    }
+    btnSave.onclick = () => {
+        saveCurrentNotes();
+        const data = JSON.stringify({ frames, activeFrameIndex, projectName: document.getElementById("projectName").value });
+        const blob = new Blob([data], {type: "application/json"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url;
+        a.download = (document.getElementById("projectName").value || "project") + ".json";
+        a.click();
+    };
 
-    function saveCurrentNotes() {
-      const frame = getCurrentFrame();
-      frame.notesHtml = notesEditor.innerHTML;
-    }
+    btnLoad.onclick = () => fileProj.click();
+    fileProj.onchange = e => {
+        const f = e.target.files[0];
+        if(!f) return;
+        const r = new FileReader();
+        r.onload = ev => {
+            try {
+                const d = JSON.parse(ev.target.result);
+                frames.length = 0;
+                d.frames.forEach(fr => frames.push(fr));
+                activeFrameIndex = d.activeFrameIndex || 0;
+                document.getElementById("projectName").value = d.projectName || "";
+                updateFramesUI();
+                loadCurrentNotes();
+                drawScene();
+            } catch(err) { alert("Ошибка файла"); }
+        };
+        r.readAsText(f);
+    };
 
-    function loadCurrentNotes() {
-      const frame = getCurrentFrame();
-      notesEditor.innerHTML = frame.notesHtml || "";
-    }
+    /* --- INITIALIZATION --- */
+    frames.push(createEmptyFrame());
+    updateFramesUI();
+    drawScene();
 
-    init();
   </script>
 </body>
 </html>
